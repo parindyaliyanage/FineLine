@@ -5,61 +5,66 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1a4a7c),
-            Color(0xFF2c5c8f),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 60),
-              const Text(
-                'Sign Up',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 50),
-              _buildTextField('Driving License Number'),
-              const SizedBox(height: 25),
-              _buildTextField('NIC number'),
-              const SizedBox(height: 25),
-              _buildTextField('Phone Number'),
-              const SizedBox(height: 25),
-              _buildTextField('Password', isPassword: true),
-              const SizedBox(height: 110),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF1a4a7c),
+                Color(0xFF2c5c8f),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 60),
+                  const Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                child: const Text(
-                  'Next',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Color(0xFF1a4a7c),
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 50),
+                  _buildTextField('Driving License Number'),
+                  const SizedBox(height: 25),
+                  _buildTextField('NIC number'),
+                  const SizedBox(height: 25),
+                  _buildTextField('Phone Number'),
+                  const SizedBox(height: 25),
+                  _buildTextField('Password', isPassword: true),
+                  const SizedBox(height: 140),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Color(0xFF1a4a7c),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 1000), // Extra spacing for safety
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/SignUpScreen.dart';
 import 'screens/SignInScreen.dart';
 import 'screens/homePage.dart';
+import 'screens/Hamburger.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: const Scaffold(
-        body: homePage(username: 'pari',),
+        body: SignUpScreen(),
       ),
     );
   }
