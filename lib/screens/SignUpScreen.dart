@@ -42,7 +42,7 @@ class SignUpScreen extends StatelessWidget {
                   _buildTextField('Phone Number'),
                   const SizedBox(height: 25),
                   _buildTextField('Password', isPassword: true),
-                  const SizedBox(height: 140),
+                  const SizedBox(height: 120),
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
