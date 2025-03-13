@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1042656988297",
+    "project_id": "fine-line-fb15f",
+    "storage_bucket": "fine-line-fb15f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042656988297:android:0e983a8fedf150b66f0a58",
+        "android_client_info": {
+          "package_name": "com.example.fineline"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRHiMN-FnxH7j0Wp7rZH9TukMNSSY-w4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

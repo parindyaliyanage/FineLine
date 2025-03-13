@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  // Add controllers for text fields
+  final TextEditingController _licenseController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up controllers when the widget is disposed
+    _licenseController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +50,19 @@ class SignInScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 50),
-              _buildTextField('Driving License Number'),
+              _buildTextField(
+                'Driving License Number',
+                controller: _licenseController,
+              ),
               const SizedBox(height: 25),
-              _buildTextField('Password', isPassword: true),
+              _buildTextField(
+                'Password',
+                controller: _passwordController,
+                isPassword: true,
+              ),
               const SizedBox(height: 300),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: _handleSignIn,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -62,8 +86,13 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, {bool isPassword = false}) {
+  Widget _buildTextField(
+      String label, {
+        bool isPassword = false,
+        required TextEditingController controller,
+      }) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         labelText: label,
@@ -77,5 +106,17 @@ class SignInScreen extends StatelessWidget {
       ),
       style: const TextStyle(color: Colors.white),
     );
+  }
+
+  void _handleSignIn() {
+    // Get the values from controllers
+    final license = _licenseController.text;
+    final password = _passwordController.text;
+
+    // Add your sign-in logic here
+    print('License: $license');
+    print('Password: $password');
+
+    // TODO: Implement sign-in logic
   }
 }

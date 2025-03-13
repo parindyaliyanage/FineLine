@@ -1,17 +1,25 @@
+import 'package:fineline/screens/Hamburger.dart';
 import 'package:flutter/material.dart';
+import 'package:fineline/screens/Notification.dart';
+import 'package:fineline/screens/HistoryPage.dart';
+import 'package:fineline/screens/PaymentPage.dart';
 
-class homePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
   final String username;
 
-  const homePage({
-    Key? key,
-    required this.username,
-  }) : super(key: key);
+  const HomePage({Key? key, required this.username}) : super(key: key);
 
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -25,42 +33,47 @@ class homePage extends StatelessWidget {
           child: Column(
             children: [
               // Top greeting section
-          Container(
-          padding: const EdgeInsets.all(16.0),
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 24,
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Hamburger(username: widget.username),
+                          ),
+                        );
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashRadius: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hello, ${widget.username}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-                splashRadius: 24,
               ),
-              SizedBox(width: 8),
-              Text(
-                'Hello, $username',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
 
               // White container with buttons
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 300),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -91,7 +104,26 @@ class homePage extends StatelessWidget {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          if (text == "Notification") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NotificationPage()),
+            );
+          }
+          if (text == "History") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HistoryPage()),
+            );
+          }
+          if (text == "Payments") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PaymentPage()),
+            );
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
@@ -104,7 +136,7 @@ class homePage extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -112,4 +144,5 @@ class homePage extends StatelessWidget {
       ),
     );
   }
+
 }

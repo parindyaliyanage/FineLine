@@ -1,7 +1,8 @@
 import 'package:fineline/screens/homePage.dart';
 import 'package:flutter/material.dart';
 
-class Hamburger extends StatelessWidget {
+
+class Hamburger extends StatefulWidget {
   final String username;
 
   const Hamburger({
@@ -9,6 +10,11 @@ class Hamburger extends StatelessWidget {
     required this.username,
   }) : super(key: key);
 
+  @override
+  State<Hamburger> createState() => _HamburgerState();
+}
+
+class _HamburgerState extends State<Hamburger> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -27,10 +33,10 @@ class Hamburger extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.close),
                         onPressed: () {
-                          // Navigate to SecondPage
+                          // Navigate to HomePage
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => homePage(username: username)),
+                            MaterialPageRoute(builder: (context) => HomePage(username: widget.username)),
                           );
                         },
                       ),
@@ -47,7 +53,7 @@ class Hamburger extends StatelessWidget {
                   ),
                   SizedBox(height: 12),
                   Text(
-                    username,
+                    widget.username,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,

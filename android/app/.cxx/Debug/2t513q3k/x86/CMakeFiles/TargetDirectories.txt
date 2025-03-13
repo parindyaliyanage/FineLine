@@ -1,0 +1,2 @@
+C:/NSBM/3rd Year/individual project/FineLine/android/app/.cxx/Debug/2t513q3k/x86/CMakeFiles/edit_cache.dir
+C:/NSBM/3rd Year/individual project/FineLine/android/app/.cxx/Debug/2t513q3k/x86/CMakeFiles/rebuild_cache.dir
