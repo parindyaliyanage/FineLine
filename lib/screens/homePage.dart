@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fineline/screens/Notification.dart';
 import 'package:fineline/screens/HistoryPage.dart';
 import 'package:fineline/screens/PaymentPage.dart';
-
+import 'package:fineline/screens/SignUpScreen.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Hello, ${widget.username}',
+                      'Hello, ${widget.username}', // Use widget.username
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -144,5 +144,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }
