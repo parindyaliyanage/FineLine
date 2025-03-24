@@ -1,23 +1,18 @@
-import 'package:fineline/repositiries/authentication_repository.dart';
 import 'package:flutter/material.dart';
-import 'screens/SignUpScreen.dart';
-import 'screens/SignInScreen.dart';
-import 'screens/homePage.dart';
-import 'screens/Hamburger.dart';
-import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
+import 'package:fineline/repositiries/authentication_repository.dart';
+import 'package:fineline/screens/SignInScreen.dart';
+import 'package:fineline/screens/homePage.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
-  runApp(const MyApp());
-
-
-// ...
-
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter binding is initialized
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,).then(
-      (FirebaseApp value) => Get.put(AuthenticationRepository())
-  );
+    options: DefaultFirebaseOptions.currentPlatform,
+  ).then((FirebaseApp value) => Get.put(AuthenticationRepository()));
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -25,16 +20,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign Up Demo',
+    return GetMaterialApp(
+      title: 'Your App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const Scaffold(
-        body: HomePage(username: "Parindya"),
-      ),
+      home: SignInScreen(), // Directly navigate to SignInScreen
     );
   }
 }

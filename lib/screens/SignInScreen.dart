@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:fineline/repositiries/authentication_repository.dart';
+import 'SignUpScreen.dart';
+import 'homePage.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  // Add controllers for text fields
+  // Controllers for text fields
   final TextEditingController _licenseController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // Access the AuthenticationRepository
+  final AuthenticationRepository _authRepo = Get.find();
+
   @override
   void dispose() {
-    // Clean up controllers when the widget is disposed
+    // Clean up controllers
     _licenseController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -22,64 +29,77 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1a4a7c),
-            Color(0xFF2c5c8f),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 60),
-              const Text(
-                'Sign In',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 50),
-              _buildTextField(
-                'Driving License Number',
-                controller: _licenseController,
-              ),
-              const SizedBox(height: 25),
-              _buildTextField(
-                'Password',
-                controller: _passwordController,
-                isPassword: true,
-              ),
-              const SizedBox(height: 300),
-              ElevatedButton(
-                onPressed: _handleSignIn,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'Next',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Color(0xFF1a4a7c),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1a4a7c),
+              Color(0xFF2c5c8f),
             ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 60),
+                const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 50),
+                _buildTextField('Driving License Number', controller: _licenseController),
+                const SizedBox(height: 25),
+                _buildTextField(
+                  'Password',
+                  controller: _passwordController,
+                  isPassword: true,
+                ),
+                const SizedBox(height: 50),
+                ElevatedButton(
+                  onPressed: _handleSignIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'Sign In',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Color(0xFF1a4a7c),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to SignUpScreen
+                    Get.to(() => SignUpScreen());
+                  },
+                  child: const Text(
+                    'Don\'t have an account? Sign Up',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -108,15 +128,38 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  void _handleSignIn() {
-    // Get the values from controllers
-    final license = _licenseController.text;
-    final password = _passwordController.text;
+  void _handleSignIn() async {
+    // Get the values from the text fields
+    String license = _licenseController.text.trim();
+    String password = _passwordController.text.trim();
 
-    // Add your sign-in logic here
-    print('License: $license');
-    print('Password: $password');
+    // Validate inputs
+    if (license.isEmpty || password.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please fill in all fields',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
-    // TODO: Implement sign-in logic
+    // Convert driving license number to a unique email
+    final String email = '${license}@fineline.com';
+
+    // Call the sign-in method from AuthenticationRepository
+    try {
+      await _authRepo.signInWithEmailAndPassword(email, password);
+      // Navigate to HomePage on successful sign-in
+      Get.off(() => HomePage(username: license));
+    } catch (e) {
+      // Show error message
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 }

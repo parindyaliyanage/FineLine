@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:fineline/repositiries/authentication_repository.dart';
+import 'SignInScreen.dart';
+import 'homePage.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
+
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _licenseController = TextEditingController();
+  final TextEditingController _nicController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  final AuthenticationRepository _authRepo = Get.find();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _licenseController.dispose();
+    _nicController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sign Up'),
+      ),
       body: SingleChildScrollView(
         child: Container(
           decoration: const BoxDecoration(
@@ -35,16 +65,22 @@ class SignUpScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 50),
-                  _buildTextField('Driving License Number'),
+                  _buildTextField('Username', controller: _usernameController),
                   const SizedBox(height: 25),
-                  _buildTextField('NIC number'),
+                  _buildTextField('Driving License Number', controller: _licenseController),
                   const SizedBox(height: 25),
-                  _buildTextField('Phone Number'),
+                  _buildTextField('NIC Number', controller: _nicController),
                   const SizedBox(height: 25),
-                  _buildTextField('Password', isPassword: true),
-                  const SizedBox(height: 120),
+                  _buildTextField('Phone Number', controller: _phoneController),
+                  const SizedBox(height: 25),
+                  _buildTextField(
+                    'Password',
+                    controller: _passwordController,
+                    isPassword: true,
+                  ),
+                  const SizedBox(height: 50),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _handleSignUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -53,7 +89,7 @@ class SignUpScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Next',
+                      'Sign Up',
                       style: TextStyle(
                         fontSize: 20,
                         color: Color(0xFF1a4a7c),
@@ -61,7 +97,20 @@ class SignUpScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 1000), // Extra spacing for safety
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to SignInScreen
+                      Get.to(() => SignInScreen());
+                    },
+                    child: const Text(
+                      'Already have an account? Sign In',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -71,8 +120,13 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, {bool isPassword = false}) {
+  Widget _buildTextField(
+      String label, {
+        bool isPassword = false,
+        required TextEditingController controller,
+      }) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         labelText: label,
@@ -86,5 +140,34 @@ class SignUpScreen extends StatelessWidget {
       ),
       style: const TextStyle(color: Colors.white),
     );
+  }
+
+  void _handleSignUp() async {
+    final String username = _usernameController.text.trim();
+    final String license = _licenseController.text.trim();
+    final String nic = _nicController.text.trim();
+    final String phone = _phoneController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (username.isEmpty || license.isEmpty || nic.isEmpty || phone.isEmpty || password.isEmpty) {
+      Get.snackbar('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      // Convert driving license number to a unique email
+      final String email = '${license}@fineline.com';
+
+      // Register the user with Firebase Auth (email/password)
+      await _authRepo.registerWithEmailAndPassword(email, password);
+
+      // Save additional user details to Firestore
+      await _authRepo.saveUserDetails(username, license, nic, phone, email);
+
+      // Navigate to the home page
+      Get.off(() => HomePage(username: username));
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
   }
 }
