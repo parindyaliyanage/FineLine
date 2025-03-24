@@ -1,5 +1,8 @@
 import 'package:fineline/screens/homePage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../repositiries/authentication_repository.dart';
+import 'SignInScreen.dart';
 
 
 class Hamburger extends StatefulWidget {
@@ -98,8 +101,33 @@ class _HamburgerState extends State<Hamburger> {
                   _buildMenuItem(
                     icon: Icons.logout,
                     title: 'Log Out',
-                    onTap: () {
-                      // Handle logout
+                    onTap: () async {
+                      try {
+                        // Get the AuthenticationRepository instance
+                        final authRepo = Get.find<AuthenticationRepository>();
+
+                        // Sign out
+                        await authRepo.signOut();
+
+                        // Navigate to SignInScreen and clear all routes
+                        Get.offAll(() => SignInScreen());
+
+                        // Optional: Show success message
+                        Get.snackbar(
+                          'Logged Out',
+                          'You have been successfully logged out',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
+                      } catch (e) {
+                        // Show error message if logout fails
+                        Get.snackbar(
+                          'Error',
+                          'Failed to log out: ${e.toString()}',
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                      }
                     },
                   ),
                 ],
