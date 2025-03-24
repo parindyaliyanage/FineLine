@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/repositiries/authentication_repository.dart';
@@ -147,13 +148,21 @@ class _SignInScreenState extends State<SignInScreen> {
     // Convert driving license number to a unique email
     final String email = '${license}@fineline.com';
 
-    // Call the sign-in method from AuthenticationRepository
     try {
+      // Step 1: Sign in with Firebase Auth
       await _authRepo.signInWithEmailAndPassword(email, password);
-      // Navigate to HomePage on successful sign-in
-      Get.off(() => HomePage(username: license));
+
+      // Step 2: Fetch user details from Firestore
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userData = await _authRepo.getUserDetails(user.uid);
+
+        // Step 3: Navigate to HomePage with the actual username
+        Get.off(() => HomePage(
+          username: userData?['username'] ?? 'User', // Use username from Firestore
+        ));
+      }
     } catch (e) {
-      // Show error message
       Get.snackbar(
         'Error',
         e.toString(),
