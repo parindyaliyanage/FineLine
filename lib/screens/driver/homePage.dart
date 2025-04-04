@@ -1,9 +1,9 @@
-import 'package:fineline/screens/Hamburger.dart';
+import 'package:fineline/screens/driver/Hamburger.dart';
 import 'package:flutter/material.dart';
-import 'package:fineline/screens/Notification.dart';
-import 'package:fineline/screens/HistoryPage.dart';
-import 'package:fineline/screens/PaymentPage.dart';
-import 'package:fineline/screens/SignUpScreen.dart';
+import 'package:fineline/screens/driver/Notification.dart';
+import 'package:fineline/screens/driver/HistoryPage.dart';
+import 'package:fineline/screens/driver/PaymentPage.dart';
+import 'package:fineline/screens/driver/SignUpScreen.dart';
 
 class HomePage extends StatefulWidget {
   final String username;

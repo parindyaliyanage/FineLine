@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:fineline/repositiries/authentication_repository.dart';
+import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'SignUpScreen.dart';
 import 'homePage.dart';
 
@@ -13,16 +14,13 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  // Controllers for text fields
   final TextEditingController _licenseController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Access the AuthenticationRepository
-  final AuthenticationRepository _authRepo = Get.find();
+  final DriverAuthRepository _authRepo = Get.find();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    // Clean up controllers
     _licenseController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -48,6 +46,13 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Get.back(),
+                  ),
+                ),
                 const SizedBox(height: 60),
                 const Text(
                   'Sign In',
@@ -61,14 +66,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 const SizedBox(height: 50),
                 _buildTextField('Driving License Number', controller: _licenseController),
                 const SizedBox(height: 25),
-                _buildTextField(
-                  'Password',
-                  controller: _passwordController,
-                  isPassword: true,
-                ),
+                _buildTextField('Password', controller: _passwordController, isPassword: true),
                 const SizedBox(height: 50),
                 ElevatedButton(
-                  onPressed: _handleSignIn,
+                  onPressed: _isLoading ? null : _handleSignIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -76,7 +77,16 @@ class _SignInScreenState extends State<SignInScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
+                  child: _isLoading
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF1a4a7c),
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Text(
                     'Sign In',
                     style: TextStyle(
                       fontSize: 20,
@@ -87,18 +97,17 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
                 const SizedBox(height: 20),
                 TextButton(
-                  onPressed: () {
-                    // Navigate to SignUpScreen
-                    Get.to(() => SignUpScreen());
-                  },
+                  onPressed: () => Get.to(() => const SignUpScreen()),
                   child: const Text(
                     'Don\'t have an account? Sign Up',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
+                if (_isLoading)
+                  const LinearProgressIndicator(
+                    color: Colors.white,
+                    backgroundColor: Colors.transparent,
+                  ),
               ],
             ),
           ),
@@ -107,11 +116,7 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildTextField(
-      String label, {
-        bool isPassword = false,
-        required TextEditingController controller,
-      }) {
+  Widget _buildTextField(String label, {bool isPassword = false, required TextEditingController controller}) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
@@ -129,12 +134,19 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  void _handleSignIn() async {
-    // Get the values from the text fields
-    String license = _licenseController.text.trim();
-    String password = _passwordController.text.trim();
+  Future<Map<String, dynamic>?> _getDriverData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      return doc.data();
+    }
+    return null;
+  }
 
-    // Validate inputs
+  void _handleSignIn() async {
+    final license = _licenseController.text.trim();
+    final password = _passwordController.text.trim();
+
     if (license.isEmpty || password.isEmpty) {
       Get.snackbar(
         'Error',
@@ -145,30 +157,25 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    // Convert driving license number to a unique email
-    final String email = '${license}@fineline.com';
+    setState(() => _isLoading = true);
 
     try {
-      // Step 1: Sign in with Firebase Auth
+      final email = '$license@fineline.com';
       await _authRepo.signInWithEmailAndPassword(email, password);
 
-      // Step 2: Fetch user details from Firestore
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userData = await _authRepo.getUserDetails(user.uid);
-
-        // Step 3: Navigate to HomePage with the actual username
-        Get.off(() => HomePage(
-          username: userData?['username'] ?? 'User', // Use username from Firestore
-        ));
-      }
+      final userData = await _getDriverData();
+      Get.off(() => HomePage(
+        username: userData?['username'] ?? 'Driver',
+      ));
     } catch (e) {
       Get.snackbar(
-        'Error',
+        'Sign In Failed',
         e.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 }

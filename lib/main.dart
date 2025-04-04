@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fineline/screens/role-selection.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
-import 'package:fineline/repositiries/authentication_repository.dart';
-import 'package:fineline/screens/SignInScreen.dart';
-import 'package:fineline/screens/homePage.dart';
 import 'firebase_options.dart';
+import 'package:fineline/repositiries/driver_auth_repository.dart';
+import 'package:fineline/repositiries/officer_auth_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,25 +13,12 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize AuthenticationRepository
-  Get.put(AuthenticationRepository()); // Add this line
+  // Initialize both repositories
+  Get.lazyPut(() => DriverAuthRepository());
+  Get.lazyPut(() => OfficerAuthRepository());
 
   runApp(MyApp());
 }
-
-// Add this temporary function (remove after use)
-Future<void> _forceCreateUsersCollection() async {
-  try {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc('test_doc')
-        .set({'test': true});
-    debugPrint('Debug: Successfully created users collection!');
-  } catch (e) {
-    debugPrint('Debug Error creating collection: $e');
-  }
-}
-
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -39,13 +26,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Your App',
+      title: 'FineLine App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SignInScreen(), // Directly navigate to SignInScreen
+      home: RoleSelectionScreen(),
+      getPages: [
+        GetPage(name: '/role-selection', page: () => RoleSelectionScreen()),
+      ],
     );
   }
 }
