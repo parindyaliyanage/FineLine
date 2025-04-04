@@ -1,7 +1,7 @@
-import 'package:fineline/screens/homePage.dart';
+import 'package:fineline/screens/driver/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../repositiries/authentication_repository.dart';
+import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'SignInScreen.dart';
 
 
@@ -104,7 +104,7 @@ class _HamburgerState extends State<Hamburger> {
                     onTap: () async {
                       try {
                         // Get the AuthenticationRepository instance
-                        final authRepo = Get.find<AuthenticationRepository>();
+                        final authRepo = Get.find<DriverAuthRepository>();
 
                         // Sign out
                         await authRepo.signOut();
