@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:fineline/repositiries/authentication_repository.dart';
 import 'SignInScreen.dart';
 import 'homePage.dart';
+import 'package:fineline/repositiries/driver_auth_repository.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -18,7 +18,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final AuthenticationRepository _authRepo = Get.find();
+  final DriverAuthRepository _authRepo = Get.find();
 
   @override
   void dispose() {
@@ -162,8 +162,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       await _authRepo.registerWithEmailAndPassword(email, password);
 
       // Save additional user details to Firestore
-      await _authRepo.saveUserDetails(username, license, nic, phone, email);
-
+      await _authRepo.saveDriverDetails(
+        username: username,
+        license: license,
+        nic: nic,
+        phone: phone,
+        email: email,
+      );
       // Navigate to the home page
       Get.off(() => HomePage(username: username));
     } catch (e) {
