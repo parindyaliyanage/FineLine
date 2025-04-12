@@ -1,9 +1,7 @@
-import 'package:fineline/screens/driver/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'SignInScreen.dart';
-
 
 class Hamburger extends StatefulWidget {
   final String username;
@@ -34,18 +32,14 @@ class _HamburgerState extends State<Hamburger> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.close),
+                        icon: const Icon(Icons.close),
                         onPressed: () {
-                          // Navigate to HomePage
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomePage(username: widget.username)),
-                          );
+                          Navigator.pop(context); // Just close the drawer
                         },
                       ),
                     ],
                   ),
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 30,
                     backgroundColor: Color(0xFF1a4a7c),
                     child: Icon(
@@ -54,10 +48,10 @@ class _HamburgerState extends State<Hamburger> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
                     widget.username,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -68,7 +62,7 @@ class _HamburgerState extends State<Hamburger> {
             // Menu items
             Expanded(
               child: ListView(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 children: [
                   _buildMenuItem(
                     icon: Icons.edit,
@@ -101,34 +95,7 @@ class _HamburgerState extends State<Hamburger> {
                   _buildMenuItem(
                     icon: Icons.logout,
                     title: 'Log Out',
-                    onTap: () async {
-                      try {
-                        // Get the AuthenticationRepository instance
-                        final authRepo = Get.find<DriverAuthRepository>();
-
-                        // Sign out
-                        await authRepo.signOut();
-
-                        // Navigate to SignInScreen and clear all routes
-                        Get.offAll(() => SignInScreen());
-
-                        // Optional: Show success message
-                        Get.snackbar(
-                          'Logged Out',
-                          'You have been successfully logged out',
-                          backgroundColor: Colors.green,
-                          colorText: Colors.white,
-                        );
-                      } catch (e) {
-                        // Show error message if logout fails
-                        Get.snackbar(
-                          'Error',
-                          'Failed to log out: ${e.toString()}',
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                        );
-                      }
-                    },
+                    onTap: _handleLogout,
                   ),
                 ],
               ),
@@ -139,13 +106,52 @@ class _HamburgerState extends State<Hamburger> {
     );
   }
 
+  Future<void> _handleLogout() async {
+    try {
+      // Show loading indicator
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // Create a new instance of the repository
+      final authRepo = DriverAuthRepository();
+      await authRepo.signOut();
+
+      // Close any open dialogs
+      if (Get.isDialogOpen!) Get.back();
+
+      // Navigate to SignInScreen and clear all routes
+      Get.offAll(() => const SignInScreen());
+
+      // Show success message
+      Get.snackbar(
+        'Logged Out',
+        'You have been successfully logged out',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      // Close any open dialogs
+      if (Get.isDialogOpen!) Get.back();
+
+      // Show error message
+      Get.snackbar(
+        'Error',
+        'Failed to log out: ${e.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -155,17 +161,17 @@ class _HamburgerState extends State<Hamburger> {
         child: ListTile(
           leading: Icon(
             icon,
-            color: Color(0xFF1a4a7c),
+            color: const Color(0xFF1a4a7c),
           ),
           title: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: Colors.black87,
             ),
           ),
           onTap: onTap,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         ),
       ),
     );

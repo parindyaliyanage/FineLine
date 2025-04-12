@@ -155,21 +155,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     try {
-      // Convert driving license number to a unique email
-      final String email = '${license}@fineline.com';
+      // 1. Check if driver exists in official records (updated method name)
+      final isRegistered = await _authRepo.isDriverRegistered(license, nic);
+      if (!isRegistered) {
+        throw Exception('Your license/NIC is not registered in our system');
+      }
 
-      // Register the user with Firebase Auth (email/password)
+      // 2. Get official driver data
+      final officialData = await _authRepo.getOfficialDriverData(license, nic) ?? {};
+
+      // 3. Create account with both username and official data
+      final String email = '$license@fineline.com';
       await _authRepo.registerWithEmailAndPassword(email, password);
-
-      // Save additional user details to Firestore
       await _authRepo.saveDriverDetails(
         username: username,
         license: license,
         nic: nic,
         phone: phone,
         email: email,
+        officialData: officialData, // Now includes required parameter
       );
-      // Navigate to the home page
+
       Get.off(() => HomePage(username: username));
     } catch (e) {
       Get.snackbar('Error', e.toString());

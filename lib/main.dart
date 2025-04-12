@@ -14,7 +14,7 @@ Future<void> main() async {
   );
 
   // Initialize both repositories
-  Get.lazyPut(() => DriverAuthRepository());
+  Get.lazyPut(() => DriverAuthRepository(), fenix: true);
   Get.lazyPut(() => OfficerAuthRepository());
 
   runApp(MyApp());
