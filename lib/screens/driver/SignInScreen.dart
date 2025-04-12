@@ -144,36 +144,32 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _handleSignIn() async {
-    final license = _licenseController.text.trim();
+    final identifier = _licenseController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (license.isEmpty || password.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please fill in all fields',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+    if (identifier.isEmpty || password.isEmpty) {
+      Get.snackbar('Error', 'Please fill in all fields');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final email = '$license@fineline.com';
-      await _authRepo.signInWithEmailAndPassword(email, password);
+      // Check if driver exists
+      final driver = await _authRepo.getDriverByIdentifier(identifier);
+      if (driver == null) {
+        throw Exception('Invalid license/NIC number');
+      }
 
-      final userData = await _getDriverData();
-      Get.off(() => HomePage(
-        username: userData?['username'] ?? 'Driver',
-      ));
-    } catch (e) {
-      Get.snackbar(
-        'Sign In Failed',
-        e.toString(),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      // Sign in with email (license@fineline.com)
+      await _authRepo.signInWithEmailAndPassword(
+        '${driver['license']}@fineline.com',
+        password,
       );
+
+      Get.off(() => HomePage(username: driver['username']));
+    } catch (e) {
+      Get.snackbar('Sign In Failed', e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
