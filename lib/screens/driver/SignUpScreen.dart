@@ -3,9 +3,10 @@ import 'package:get/get.dart';
 import 'SignInScreen.dart';
 import 'homePage.dart';
 import 'package:fineline/repositiries/driver_auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
@@ -144,8 +145,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _handleSignUp() async {
     final String username = _usernameController.text.trim();
-    final String license = _licenseController.text.trim();
-    final String nic = _nicController.text.trim();
+    final String license = _licenseController.text.trim().toUpperCase();
+    final String nic = _nicController.text.trim().toUpperCase();
     final String phone = _phoneController.text.trim();
     final String password = _passwordController.text.trim();
 
@@ -154,17 +155,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
+    if (password.length < 6) {
+      Get.snackbar('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
     try {
-      // 1. Check if driver exists in official records (updated method name)
+      // Show loading indicator
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // 1. Check if driver exists in official records
       final isRegistered = await _authRepo.isDriverRegistered(license, nic);
       if (!isRegistered) {
-        throw Exception('Your license/NIC is not registered in our system');
+        Get.back(); // Close loading dialog
+        Get.snackbar(
+          'Registration Failed',
+          'Your license/NIC is not registered in our system. Please contact support if you believe this is an error.',
+          duration: const Duration(seconds: 5),
+        );
+        return;
       }
 
       // 2. Get official driver data
       final officialData = await _authRepo.getOfficialDriverData(license, nic) ?? {};
 
-      // 3. Create account with both username and official data
+      // 3. Create account
       final String email = '$license@fineline.com';
       await _authRepo.registerWithEmailAndPassword(email, password);
       await _authRepo.saveDriverDetails(
@@ -173,12 +191,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
         nic: nic,
         phone: phone,
         email: email,
-        officialData: officialData, // Now includes required parameter
+        officialData: officialData,
       );
 
+      Get.back(); // Close loading dialog
       Get.off(() => HomePage(username: username));
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.back(); // Close loading dialog
+      String errorMessage = 'Registration failed';
+
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'An account already exists with this license number';
+            break;
+          case 'weak-password':
+            errorMessage = 'Password is too weak';
+            break;
+          default:
+            errorMessage = 'Authentication error: ${e.message}';
+        }
+      }
+
+      Get.snackbar('Error', errorMessage, duration: const Duration(seconds: 5));
     }
   }
 }

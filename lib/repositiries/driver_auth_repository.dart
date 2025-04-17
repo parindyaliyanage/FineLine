@@ -11,12 +11,17 @@ class DriverAuthRepository extends BaseAuthRepository {
   Future<bool> isDriverRegistered(String license, String nic) async {
     try {
       final query = await _firestore.collection('drivers')
-          .where('license', isEqualTo: license)
-          .where('nic', isEqualTo: nic)
+          .where('licenseNumber', isEqualTo: license.trim().toUpperCase())
+          .where('nic', isEqualTo: nic.trim().toUpperCase())
           .limit(1)
           .get();
 
-      return query.docs.isNotEmpty;
+      if (query.docs.isEmpty) {
+        if (kDebugMode) print('No driver found with license: $license and NIC: $nic');
+        return false;
+      }
+
+      return true;
     } catch (e) {
       if (kDebugMode) print('Driver validation error: $e');
       rethrow;
@@ -27,7 +32,7 @@ class DriverAuthRepository extends BaseAuthRepository {
   Future<Map<String, dynamic>?> getOfficialDriverData(String license, String nic) async {
     try {
       final query = await _firestore.collection('drivers')
-          .where('license', isEqualTo: license)
+          .where('licenseNumber', isEqualTo: license)
           .where('nic', isEqualTo: nic)
           .limit(1)
           .get();
@@ -122,11 +127,13 @@ class DriverAuthRepository extends BaseAuthRepository {
   }
 
   /// Utility method to check internet connection
+  @override
   Future<bool> checkInternet() async {
     // Implement your internet check logic
     return true;
   }
 
+  @override
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
   }

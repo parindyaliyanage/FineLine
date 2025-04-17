@@ -1,44 +1,58 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/officer_model.dart';
 
 class OfficerAuthRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<Officer> signInOfficer(String badgeNumber, String password) async {
     try {
-      debugPrint("Attempting sign in with: $badgeNumber / $password");
+      // Clear any existing auth state
+      await _auth.signOut();  // Add this line
+
+      debugPrint("Attempting sign in with: $badgeNumber");
 
       final query = await _firestore
           .collection('officers')
           .where('badgeNumber', isEqualTo: badgeNumber)
-          .where('password', isEqualTo: password)
           .limit(1)
           .get();
 
-      debugPrint("Found ${query.docs.length} matching documents");
-
       if (query.docs.isEmpty) {
-        throw Exception("No officer found with these credentials");
+        throw Exception("No officer found with this badge number");
       }
 
-      return Officer.fromMap(query.docs.first.data());
+      final officerData = query.docs.first.data();
+
+      // Verify password before Firebase Auth
+      if (officerData['password'] != password) {
+        throw Exception("Invalid password");
+      }
+
+      // Only proceed with Firebase Auth if email exists
+      if (officerData['email'] != null) {
+        await _auth.signInWithEmailAndPassword(
+          email: officerData['email'],
+          password: password,
+        );
+      }
+
+      return Officer.fromMap(officerData);
     } catch (e) {
       debugPrint("Sign-in error: ${e.toString()}");
       rethrow;
     }
   }
 
-  Future<void> _logAttempt(String badgeNumber, bool success) async {
+  Future<void> signOut() async {
     try {
-      await _firestore.collection('auth_logs').add({
-        'badgeNumber': badgeNumber,
-        'success': success,
-        'timestamp': FieldValue.serverTimestamp(),
-        'ip': await _getClientIP() ?? 'unknown',
-      });
+      await _auth.signOut(); // Uses the FirebaseAuth instance
+      debugPrint("Officer signed out successfully");
     } catch (e) {
-      debugPrint("Failed to log attempt: $e");
+      debugPrint("Error signing out: ${e.toString()}");
+      rethrow;
     }
   }
 

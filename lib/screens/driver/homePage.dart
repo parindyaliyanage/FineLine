@@ -8,7 +8,7 @@ import 'package:fineline/screens/driver/SignUpScreen.dart';
 class HomePage extends StatefulWidget {
   final String username;
 
-  const HomePage({Key? key, required this.username}) : super(key: key);
+  const HomePage({super.key, required this.username});
 
   @override
   _HomePageState createState() => _HomePageState();
