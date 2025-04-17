@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fineline/models/officer_model.dart';
 import 'package:fineline/repositiries/driver_repository.dart';
+import 'package:fineline/repositiries/violation_repository.dart';
 
 class ViolationSubmission extends StatefulWidget {
   final Officer officer;
 
-  const ViolationSubmission({Key? key, required this.officer}) : super(key: key);
+  const ViolationSubmission({super.key, required this.officer});
 
   @override
   _ViolationSubmissionState createState() => _ViolationSubmissionState();
@@ -283,7 +284,7 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
     }
   }
 
-  void _submitViolation() {
+  void _submitViolation() async {
     if (_formKey.currentState!.validate() && _selectedViolations.isNotEmpty) {
       setState(() => _isLoading = true);
 
@@ -297,18 +298,31 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
         'dateTime': _currentDateTime.toString(),
         'venue': _venueController.text,
         'status': 'pending',
+        'fineAmount': _calculateFineAmount(), // Add this method
+        'isPaid': false,
       };
 
-      // TODO: Implement submission to Firestore
-      // await _firestore.collection('violations').add(violationData);
+      try {
+        final ViolationRepository violationRepo = ViolationRepository();
+        await violationRepo.submitViolation(violationData);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Violation submitted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Violation submitted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit violation: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
     } else if (_selectedViolations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -317,6 +331,26 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
         ),
       );
     }
+  }
+
+// Add this new method to calculate fine amount based on violations
+  double _calculateFineAmount() {
+    // Define fine amounts for each violation type
+    const violationFines = {
+      'Speeding': 5000.0,
+      'Traffic Signal Violation': 3000.0,
+      'Illegal Parking': 2000.0,
+      'No Seatbelt': 1000.0,
+      'Not Carrying Driving License': 2500.0,
+      'Wrong Way Driving': 4000.0,
+      'No Helmets': 1500.0,
+    };
+
+    double total = 0.0;
+    for (var violation in _selectedViolations) {
+      total += violationFines[violation] ?? 0.0;
+    }
+    return total;
   }
 
   @override

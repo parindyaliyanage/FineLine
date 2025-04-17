@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/screens/police_officer/OfficerHomeScreen.dart';
-import 'package:fineline/models/officer_model.dart';
 import 'package:fineline/repositiries/officer_auth_repository.dart';
+import 'package:fineline/screens/role-selection.dart';
 
 class OfficerSignInScreen extends StatefulWidget {
   const OfficerSignInScreen({super.key});
@@ -39,6 +39,7 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
           curve: Curves.easeInOut);
 
     } catch (e) {
+      debugPrint("Full Error: $e");
       String errorMessage = 'Authentication failed';
       if (e.toString().contains('PERMISSION_DENIED')) {
         errorMessage = 'System maintenance in progress';
@@ -92,7 +93,7 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
                         _passwordController.clear();
-                        Get.back();
+                        Get.offAll(() => RoleSelectionScreen());
                       },
                     ),
                   ),

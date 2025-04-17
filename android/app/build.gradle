@@ -1,3 +1,5 @@
+
+
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
@@ -8,7 +10,7 @@ plugins {
 
 }
 
-def localProperties = new Properties()
+def localProperties = new java.util.Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
@@ -29,7 +31,11 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.fineline"
     compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    ndkVersion "25.2.9519653" // Add specific NDK version
+    packagingOptions {
+        pickFirst '**/*.so'
+        doNotStrip '**/*.so'
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

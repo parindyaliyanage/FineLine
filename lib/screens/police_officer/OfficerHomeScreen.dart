@@ -9,7 +9,7 @@ import 'ViolationSubmission.dart';
 class OfficerHomeScreen extends StatefulWidget {
   final Officer officer;
 
-  const OfficerHomeScreen({Key? key, required this.officer}) : super(key: key);
+  const OfficerHomeScreen({super.key, required this.officer});
 
   @override
   _OfficerHomeScreenState createState() => _OfficerHomeScreenState();
@@ -49,7 +49,7 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => OfficerHamburger(),// remember to define officer
+                            builder: (context) => OfficerHamburger(officer: widget.officer),
                           ),
                         );
                       },

@@ -7,9 +7,9 @@ class Hamburger extends StatefulWidget {
   final String username;
 
   const Hamburger({
-    Key? key,
+    super.key,
     required this.username,
-  }) : super(key: key);
+  });
 
   @override
   State<Hamburger> createState() => _HamburgerState();

@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
+  const RoleSelectionScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +43,7 @@ class RoleCard extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  RoleCard({required this.icon, required this.title, required this.onTap});
+  const RoleCard({super.key, required this.icon, required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
