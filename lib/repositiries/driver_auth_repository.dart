@@ -6,6 +6,7 @@ import 'base_auth_repository.dart';
 class DriverAuthRepository extends BaseAuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore get firestore => _firestore;
 
   /// Checks if driver exists in official 'drivers' collection
   Future<bool> isDriverRegistered(String license, String nic) async {

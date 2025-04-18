@@ -1,3 +1,4 @@
+import 'package:fineline/screens/driver/ViewProfileScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/repositiries/driver_auth_repository.dart';
@@ -66,16 +67,17 @@ class _HamburgerState extends State<Hamburger> {
                 children: [
                   _buildMenuItem(
                     icon: Icons.edit,
-                    title: 'Edit Profile',
+                    title: 'View Profile',
                     onTap: () {
-                      // Handle edit profile
+                      Navigator.pop(context);
+                      Get.to(() => const ViewProfileScreen());
                     },
                   ),
                   _buildMenuItem(
                     icon: Icons.headphones,
                     title: 'Support',
                     onTap: () {
-                      // Handle support
+                      //
                     },
                   ),
                   _buildMenuItem(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fineline/screens/auth_controller.dart';
 import 'package:fineline/screens/role-selection.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,6 +17,7 @@ Future<void> main() async {
   // Initialize both repositories
   Get.lazyPut(() => DriverAuthRepository(), fenix: true);
   Get.lazyPut(() => OfficerAuthRepository());
+  Get.put(AuthController());
 
   runApp(MyApp());
 }
