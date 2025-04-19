@@ -46,7 +46,7 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Violation History",
+          "Violation Notification",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF1a4a7c),
@@ -115,13 +115,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Chip(
-                              label: Text(
-                                data['status'] ?? 'pending',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor: _getStatusColor(data['status'] ?? 'pending'),
-                            ),
+                            // Removed the status Chip from here
                             const SizedBox(height: 4),
                             Text(
                               _formatDate(data['dateTime']),
@@ -148,21 +142,6 @@ class _NotificationPageState extends State<NotificationPage> {
       return '${dt.day}/${dt.month}/${dt.year}';
     } catch (e) {
       return 'Invalid date';
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'paid':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'disputed':
-        return Colors.blue;
-      case 'cancelled':
-        return Colors.grey;
-      default:
-        return Colors.red;
     }
   }
 }

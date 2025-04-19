@@ -22,6 +22,12 @@ class DriverAuthRepository extends BaseAuthRepository {
         return false;
       }
 
+      // Add debug print to verify the found document
+      if (kDebugMode) {
+        print('Found driver document: ${query.docs.first.data()}');
+        print('Document exists in drivers collection');
+      }
+
       return true;
     } catch (e) {
       if (kDebugMode) print('Driver validation error: $e');
@@ -58,6 +64,7 @@ class DriverAuthRepository extends BaseAuthRepository {
   }
 
   /// Saves driver details to 'users' collection after validation
+  // In driver_auth_repository.dart
   Future<void> saveDriverDetails({
     required String username,
     required String license,
@@ -70,7 +77,8 @@ class DriverAuthRepository extends BaseAuthRepository {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      await _firestore.collection('users').doc(user.uid).set({
+      // Ensure these specific fields are included
+      final completeData = {
         'username': username,
         'license': license,
         'nic': nic,
@@ -79,8 +87,16 @@ class DriverAuthRepository extends BaseAuthRepository {
         'uid': user.uid,
         'role': 'driver',
         'registration_date': FieldValue.serverTimestamp(),
-        ...officialData, // Include all official data
-      });
+        // Explicitly include the additional fields
+        'address': officialData['address'],
+        'dob': officialData['dob'],
+        'exp': officialData['exp'],
+        'licenceType': officialData['licenceType'],
+        // Include remaining official data
+        ...officialData,
+      };
+
+      await _firestore.collection('users').doc(user.uid).set(completeData);
 
       if (kDebugMode) print('Driver data saved to users collection');
     } catch (e) {
