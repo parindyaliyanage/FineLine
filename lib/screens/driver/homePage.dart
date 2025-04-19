@@ -4,6 +4,9 @@ import 'package:fineline/screens/driver/Notification.dart';
 import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
 import 'package:fineline/screens/driver/SignUpScreen.dart';
+import 'package:fineline/screens/driver/ViolationDetails.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -15,6 +18,37 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _pendingViolationId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPendingViolation();
+  }
+
+  Future<void> _fetchPendingViolation() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final query = await _firestore.collection('violations')
+          .where('identifier', whereIn: [user.uid])
+          .where('status', isEqualTo: 'pending')
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        setState(() {
+          _pendingViolationId = query.docs.first.id;
+        });
+      }
+    } catch (e) {
+      print('Error fetching pending violation: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Hello, ${widget.username}', // Use widget.username
+                      'Hello, ${widget.username}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -118,10 +152,21 @@ class _HomePageState extends State<HomePage> {
             );
           }
           if (text == "Payments") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PaymentPage()),
-            );
+            if (_pendingViolationId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PaymentPage(violationId: _pendingViolationId!),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('No pending violations to pay'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
           }
         },
         style: ElevatedButton.styleFrom(

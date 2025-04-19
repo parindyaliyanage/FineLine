@@ -333,9 +333,9 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
     }
   }
 
-// Add this new method to calculate fine amount based on violations
+//calculate fine amount based on violations
   double _calculateFineAmount() {
-    // Define fine amounts for each violation type
+    //fine amounts for each violation type
     const violationFines = {
       'Speeding': 5000.0,
       'Traffic Signal Violation': 3000.0,
