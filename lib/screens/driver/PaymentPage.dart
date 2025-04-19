@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+  final String violationId;  // Add this parameter
+
+  const PaymentPage({super.key, required this.violationId});  // Update constructor
 
   @override
-  _PaymentPageState createState() => _PaymentPageState();
+  State<PaymentPage> createState() => _PaymentPageState();
 }
 
 class _PaymentPageState extends State<PaymentPage> {
@@ -12,15 +14,28 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Payment",
-          style: TextStyle(color: Colors.white), // ✅ Make title text white
-        ),
+        title: const Text('Payment'),
         backgroundColor: const Color(0xFF1a4a7c),
-        iconTheme: const IconThemeData(color: Colors.white), // ✅ Make back button white
+        foregroundColor: Colors.white,
       ),
-      body: const Center(
-        child: Text("This is the Payment Page"),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Payment for Violation: ${widget.violationId}',  // Display the violation ID
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 20),
+            // Add your payment UI components here
+            ElevatedButton(
+              onPressed: () {
+                // Handle payment logic here
+              },
+              child: const Text('Process Payment'),
+            ),
+          ],
+        ),
       ),
     );
   }
