@@ -150,6 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String phone = _phoneController.text.trim();
     final String password = _passwordController.text.trim();
 
+    // Validate fields
     if (username.isEmpty || license.isEmpty || nic.isEmpty || phone.isEmpty || password.isEmpty) {
       Get.snackbar('Error', 'Please fill in all fields');
       return;
@@ -167,20 +168,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
         barrierDismissible: false,
       );
 
-      // 1. Check if driver exists in official records
+      // 1. Validate driver credentials
       final isRegistered = await _authRepo.isDriverRegistered(license, nic);
       if (!isRegistered) {
-        Get.back(); // Close loading dialog
+        Get.back();
         Get.snackbar(
           'Registration Failed',
-          'Your license/NIC is not registered in our system. Please contact support if you believe this is an error.',
+          'No matching driver found with provided license/NIC',
           duration: const Duration(seconds: 5),
         );
         return;
       }
 
-      // 2. Get official driver data
-      final officialData = await _authRepo.getOfficialDriverData(license, nic) ?? {};
+      // 2. Get official data (now that we know they're registered)
+      final officialData = await _authRepo.getOfficialDriverData(license, nic);
+      if (officialData == null) {
+        Get.back();
+        Get.snackbar(
+          'Error',
+          'Could not retrieve driver details',
+          duration: const Duration(seconds: 5),
+        );
+        return;
+      }
 
       // 3. Create account
       final String email = '$license@fineline.com';
@@ -194,23 +204,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
         officialData: officialData,
       );
 
-      Get.back(); // Close loading dialog
+      Get.back();
       Get.off(() => HomePage(username: username));
     } catch (e) {
-      Get.back(); // Close loading dialog
+      Get.back();
       String errorMessage = 'Registration failed';
 
       if (e is FirebaseAuthException) {
-        switch (e.code) {
-          case 'email-already-in-use':
-            errorMessage = 'An account already exists with this license number';
-            break;
-          case 'weak-password':
-            errorMessage = 'Password is too weak';
-            break;
-          default:
-            errorMessage = 'Authentication error: ${e.message}';
-        }
+        errorMessage = 'Auth error: ${e.message}';
+      } else {
+        errorMessage = 'Error: ${e.toString()}';
       }
 
       Get.snackbar('Error', errorMessage, duration: const Duration(seconds: 5));

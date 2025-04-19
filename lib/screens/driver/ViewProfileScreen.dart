@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/repositiries/driver_repository.dart';
 import '../auth_controller.dart';
-
+import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 
 class ViewProfileScreen extends StatefulWidget {
   const ViewProfileScreen({super.key});
@@ -26,9 +27,8 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
 
   Future<void> _loadDriverData() async {
     try {
-      // Get current user ID directly from FirebaseAuth
       final userId = FirebaseAuth.instance.currentUser?.uid;
-      print('Current UID: $userId'); // Debug
+      print('Current UID: $userId');
 
       if (userId == null) {
         setState(() {
@@ -39,7 +39,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
       }
 
       final data = await _driverRepo.getDriverProfile(userId);
-      print('Fetched data: $data'); // Debug
+      print('Fetched data: $data');
 
       setState(() {
         _driverData = data;
@@ -50,6 +50,27 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
         _errorMessage = 'Error: ${e.toString()}';
         _isLoading = false;
       });
+    }
+  }
+
+  // Updated formatDate method to handle Timestamp
+  String _formatDate(dynamic dateValue) {
+    if (dateValue == null) return 'N/A';
+
+    try {
+      DateTime date;
+
+      if (dateValue is Timestamp) {
+        date = dateValue.toDate();
+      } else if (dateValue is String) {
+        date = DateTime.parse(dateValue);
+      } else {
+        return 'Invalid date';
+      }
+
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return 'Invalid date';
     }
   }
 
@@ -99,7 +120,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              _driverData?['username'] ?? 'No Name',
+              _driverData?['fullName'] ?? _driverData?['username'] ?? 'No Name',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -107,7 +128,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Driver',
+              'Driver - ${_driverData?['licenceType']?.toString().toUpperCase() ?? 'N/A'}',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
@@ -136,7 +157,15 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             const Divider(),
             _buildDetailItem('Driver License', _driverData?['licenseNumber'] ?? _driverData?['license'] ?? 'N/A'),
             const Divider(),
+            _buildDetailItem('License Type', _driverData?['licenceType']?.toString().toUpperCase() ?? 'N/A'),
+            const Divider(),
+            _buildDetailItem('Date of Birth', _formatDate(_driverData?['dob'])),
+            const Divider(),
+            _buildDetailItem('License Expiry', _formatDate(_driverData?['exp'])),
+            const Divider(),
             _buildDetailItem('Phone Number', _driverData?['phone'] ?? 'N/A'),
+            const Divider(),
+            _buildDetailItem('Address', _driverData?['address'] ?? 'N/A'),
           ],
         ),
       ),
@@ -157,11 +186,14 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
               color: Colors.black87,
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[700],
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+              ),
             ),
           ),
         ],
