@@ -18,7 +18,7 @@ class DriverRepository {
       final userData = userDoc.data()!;
 
       // 2. Get license and NIC to lookup official data
-      final license = userData['license'] ?? userData['licenseNumber'];
+      final license = userData['license']; // Now using consistent 'license' field
       final nic = userData['nic'];
 
       if (license == null || nic == null) return userData;
@@ -30,12 +30,15 @@ class DriverRepository {
           .limit(1)
           .get();
 
-      final officialData = driverQuery.docs.isEmpty ? {} : driverQuery.docs.first.data();
+      if (driverQuery.docs.isEmpty) return userData;
 
-      // 4. Merge both datasets (user data + official data)
+      final officialData = driverQuery.docs.first.data();
+
+      // 4. Return combined data but prioritize user data for any overlapping fields
       return {
-        ...userData,
         ...officialData,
+        ...userData, // User data overrides official data if fields overlap
+        'license': license, // Ensure consistent field name
       };
     } catch (e) {
       if (kDebugMode) print('Error getting driver profile: $e');

@@ -261,9 +261,8 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
       setState(() {
         _isIdentifierValid = driver != null;
         if (driver != null) {
-          _driverNameController.text = driver['username'] ?? 'Unknown';
-        // } else {
-        //   _driverNameController.clear();
+          // Use fullName from drivers collection instead of username
+          _driverNameController.text = driver['fullName'] ?? 'Unknown Driver';
         }
       });
 
