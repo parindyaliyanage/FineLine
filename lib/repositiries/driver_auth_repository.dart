@@ -77,26 +77,19 @@ class DriverAuthRepository extends BaseAuthRepository {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      // Ensure these specific fields are included
-      final completeData = {
+      // Only save user-specific data in users collection
+      final userData = {
         'username': username,
-        'license': license,
+        'license': license, // Changed from licenseNumber to license
         'nic': nic,
         'phone': phone,
         'email': email,
         'uid': user.uid,
         'role': 'driver',
         'registration_date': FieldValue.serverTimestamp(),
-        // Explicitly include the additional fields
-        'address': officialData['address'],
-        'dob': officialData['dob'],
-        'exp': officialData['exp'],
-        'licenceType': officialData['licenceType'],
-        // Include remaining official data
-        ...officialData,
       };
 
-      await _firestore.collection('users').doc(user.uid).set(completeData);
+      await _firestore.collection('users').doc(user.uid).set(userData);
 
       if (kDebugMode) print('Driver data saved to users collection');
     } catch (e) {
@@ -120,18 +113,16 @@ class DriverAuthRepository extends BaseAuthRepository {
   /// Finds driver in 'users' collection by license or NIC
   Future<Map<String, dynamic>?> getDriverByIdentifier(String identifier) async {
     try {
-      // First check by license
-      final licenseQuery = await _firestore.collection('users')
-          .where('role', isEqualTo: 'driver')
-          .where('license', isEqualTo: identifier)
+      // First check by license in drivers collection
+      final licenseQuery = await _firestore.collection('drivers')
+          .where('licenseNumber', isEqualTo: identifier)
           .limit(1)
           .get();
 
       if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
 
-      // Fallback to NIC search
-      final nicQuery = await _firestore.collection('users')
-          .where('role', isEqualTo: 'driver')
+      // Fallback to NIC search in drivers collection
+      final nicQuery = await _firestore.collection('drivers')
           .where('nic', isEqualTo: identifier)
           .limit(1)
           .get();
