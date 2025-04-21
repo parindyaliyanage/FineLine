@@ -15,7 +15,8 @@ class ViolationDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Violation Details'),
+        title: const Text('Violation Details',
+        style: TextStyle(color: Colors.white),),
         backgroundColor: const Color(0xFF1a4a7c),
         foregroundColor: Colors.white,
       ),
