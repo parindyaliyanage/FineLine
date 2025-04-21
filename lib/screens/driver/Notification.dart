@@ -23,9 +23,7 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Stream<QuerySnapshot<Map<String, dynamic>>> _getViolationsStream() {
     final user = _auth.currentUser;
-    if (user == null) {
-      return const Stream.empty();
-    }
+    if (user == null) return const Stream.empty();
 
     return _firestore.collection('users').doc(user.uid).snapshots().asyncExpand((userDoc) {
       final userData = userDoc.data();

@@ -10,29 +10,12 @@ class DriverAuthRepository extends BaseAuthRepository {
 
   /// Checks if driver exists in official 'drivers' collection
   Future<bool> isDriverRegistered(String license, String nic) async {
-    try {
-      final query = await _firestore.collection('drivers')
-          .where('licenseNumber', isEqualTo: license.trim().toUpperCase())
-          .where('nic', isEqualTo: nic.trim().toUpperCase())
-          .limit(1)
-          .get();
-
-      if (query.docs.isEmpty) {
-        if (kDebugMode) print('No driver found with license: $license and NIC: $nic');
-        return false;
-      }
-
-      // Add debug print to verify the found document
-      if (kDebugMode) {
-        print('Found driver document: ${query.docs.first.data()}');
-        print('Document exists in drivers collection');
-      }
-
-      return true;
-    } catch (e) {
-      if (kDebugMode) print('Driver validation error: $e');
-      rethrow;
-    }
+    final query = await _firestore.collection('drivers')
+        .where('licenseNumber', isEqualTo: license)
+        .where('nic', isEqualTo: nic)
+        .limit(1)
+        .get();
+    return query.docs.isNotEmpty;
   }
 
   /// Gets official driver details from 'drivers' collection
@@ -64,7 +47,7 @@ class DriverAuthRepository extends BaseAuthRepository {
   }
 
   /// Saves driver details to 'users' collection after validation
-  // In driver_auth_repository.dart
+
   Future<void> saveDriverDetails({
     required String username,
     required String license,
@@ -139,6 +122,25 @@ class DriverAuthRepository extends BaseAuthRepository {
   Future<bool> checkInternet() async {
     // Implement your internet check logic
     return true;
+  }
+
+  // For SIGN IN - Checks users collection only
+  Future<Map<String, dynamic>?> getAppUserByIdentifier(String identifier) async {
+    // Check by license first
+    final licenseQuery = await _firestore.collection('users')
+        .where('license', isEqualTo: identifier)
+        .limit(1)
+        .get();
+
+    if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
+
+    // Fallback to NIC search
+    final nicQuery = await _firestore.collection('users')
+        .where('nic', isEqualTo: identifier)
+        .limit(1)
+        .get();
+
+    return nicQuery.docs.isEmpty ? null : nicQuery.docs.first.data();
   }
 
   @override

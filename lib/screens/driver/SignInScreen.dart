@@ -147,27 +147,24 @@ class _SignInScreenState extends State<SignInScreen> {
     final identifier = _licenseController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (identifier.isEmpty || password.isEmpty) {
-      Get.snackbar('Error', 'Please fill in all fields');
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      // Check if driver exists
-      final driver = await _authRepo.getDriverByIdentifier(identifier);
-      if (driver == null) {
-        throw Exception('Invalid license/NIC number');
+      // 1. Check users collection only
+      final user = await _authRepo.getAppUserByIdentifier(identifier);
+      if (user == null) {
+        throw Exception('No app account found. Please sign up first.');
       }
 
-      // Sign in with email (license@fineline.com)
+      // 2. Sign in with email (license@fineline.com)
       await _authRepo.signInWithEmailAndPassword(
-        '${driver['license']}@fineline.com',
+        '${user['license']}@fineline.com',
         password,
       );
 
-      Get.off(() => HomePage(username: driver['username']));
+      // 3. Navigate to home
+      Get.off(() => HomePage(username: user['username']));
+
     } catch (e) {
       Get.snackbar('Sign In Failed', e.toString());
     } finally {

@@ -1,10 +1,10 @@
+import 'dart:async';
+
 import 'package:fineline/screens/driver/Hamburger.dart';
 import 'package:flutter/material.dart';
 import 'package:fineline/screens/driver/Notification.dart';
 import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
-import 'package:fineline/screens/driver/SignUpScreen.dart';
-import 'package:fineline/screens/driver/ViolationDetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,11 +21,20 @@ class _HomePageState extends State<HomePage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _pendingViolationId;
+  int _unseenViolations = 0;
+  StreamSubscription? _violationSubscription;
 
   @override
   void initState() {
     super.initState();
     _fetchPendingViolation();
+    _setupViolationListener();
+  }
+
+  @override
+  void dispose() {
+    _violationSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchPendingViolation() async {
@@ -46,6 +55,41 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       print('Error fetching pending violation: $e');
+    }
+  }
+
+  void _setupViolationListener() {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    _violationSubscription = _firestore.collection('violations')
+        .where('identifier', whereIn: [user.uid])
+        .where('isViewed', isEqualTo: false)
+        .snapshots()
+        .listen((snapshot) {
+      setState(() => _unseenViolations = snapshot.size);
+    });
+  }
+
+  Future<void> _markViolationsAsSeen() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final query = await _firestore.collection('violations')
+          .where('identifier', whereIn: [user.uid])
+          .where('isViewed', isEqualTo: false)
+          .get();
+
+      final batch = _firestore.batch();
+      for (var doc in query.docs) {
+        batch.update(doc.reference, {'isViewed': true});
+      }
+      await batch.commit();
+
+      setState(() => _unseenViolations = 0);
+    } catch (e) {
+      print('Error marking violations as seen: $e');
     }
   }
 
@@ -117,11 +161,32 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildButton('Notification', Icons.notifications),
+                      _buildNotificationButton(),
                       const SizedBox(height: 16),
-                      _buildButton('History', Icons.history),
+                      _buildButton('History', Icons.history, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ViolationHistoryPage()),
+                        );
+                      }),
                       const SizedBox(height: 16),
-                      _buildButton('Payments', Icons.payment),
+                      _buildButton('Payments', Icons.payment, () {
+                        if (_pendingViolationId != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentPage(violationId: _pendingViolationId!),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No pending violations to pay'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      }),
                     ],
                   ),
                 ),
@@ -133,42 +198,73 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildButton(String text, IconData icon) {
+  Widget _buildNotificationButton() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              await _markViolationsAsSeen();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationPage()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: 2,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: Colors.grey.shade300),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.notifications, color: Colors.black),
+                const SizedBox(width: 8),
+                const Text(
+                  'Notifications',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_unseenViolations > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: CircleAvatar(
+                radius: 10,
+                backgroundColor: Colors.red,
+                child: Text(
+                  _unseenViolations.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton(String text, IconData icon, VoidCallback onPressed) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: ElevatedButton(
-        onPressed: () {
-          if (text == "Notification") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => NotificationPage()),
-            );
-          }
-          if (text == "History") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HistoryPage()),
-            );
-          }
-          if (text == "Payments") {
-            if (_pendingViolationId != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PaymentPage(violationId: _pendingViolationId!),
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No pending violations to pay'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            }
-          }
-        },
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
