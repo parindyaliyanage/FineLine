@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fineline/models/officer_model.dart';
 import 'package:fineline/repositiries/driver_repository.dart';
@@ -297,6 +298,8 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
         'dateTime': _currentDateTime.toString(),
         'venue': _venueController.text,
         'status': 'pending',
+        'isViewed': false,
+        'createAt': FieldValue.serverTimestamp(),
         'fineAmount': _calculateFineAmount(), // Add this method
         'isPaid': false,
       };
