@@ -111,7 +111,9 @@ class ViolationDetailsPage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PaymentPage(violationId: violationId),
+              builder: (context) => PaymentPage(
+                  violationId: violationId,
+                  violationData: violationData,),
             ),
           );
         },

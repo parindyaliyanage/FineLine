@@ -25,13 +25,21 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
   bool _isIdentifierValid = false;
 
   final List<String> _violationTypes = [
-    'Speeding',
-    'Traffic Signal Violation',
-    'Illegal Parking',
-    'No Seatbelt',
-    'Not Carrying Driving License',
-    'Wrong Way Driving',
-    'No Helmets',
+    'Speeding: 5000.00',
+    'Traffic Signal Violation: 3000.00',
+    'Illegal Parking: 2000.00',
+    'No Seatbelt :1000',
+    'Not Carrying Driving License: 2500',
+    'Wrong Way Driving: 4000',
+    'No Helmets: 1500',
+
+    // 'Speeding': 5000.0,
+    // 'Traffic Signal Violation': 3000.0,
+    // 'Illegal Parking': 2000.0,
+    // 'No Seatbelt': 1000.0,
+    // 'Not Carrying Driving License': 2500.0,
+    // 'Wrong Way Driving': 4000.0,
+    // 'No Helmets': 1500.0,
   ];
 
   final DriverRepository _driverRepo = DriverRepository();

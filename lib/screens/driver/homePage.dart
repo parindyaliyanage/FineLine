@@ -147,10 +147,21 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
+
+              Container(
+                height: 400,
+                padding: const EdgeInsets.all(20),
+                child: Image.asset(
+                  'assets/FineLineLogo.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+
               // White container with buttons
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 300),
+                  // Change margin to 100 to accommodate the image
+                  margin: const EdgeInsets.only(top: 30),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -175,7 +186,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => PaymentPage(violationId: _pendingViolationId!),
+                              // builder: (context) => PaymentPage(violationId: _pendingViolationId!),
+                              builder: (context) => PaymentPage(),
                             ),
                           );
                         } else {
