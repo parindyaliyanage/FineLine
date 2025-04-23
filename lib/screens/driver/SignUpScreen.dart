@@ -35,65 +35,77 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
+        title: const Text(
+          'Sign Up',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1a4a7c),
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF1a4a7c),
-                Color(0xFF2c5c8f),
-              ],
-            ),
+      body: Container(
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1a4a7c),
+              Color(0xFF2c5c8f),
+            ],
           ),
-          child: SafeArea(
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
                   const Text(
                     'Sign Up',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 50),
-                  _buildTextField('Username', controller: _usernameController),
-                  const SizedBox(height: 25),
-                  _buildTextField('Driving License Number', controller: _licenseController),
-                  const SizedBox(height: 25),
-                  _buildTextField('NIC Number', controller: _nicController),
-                  const SizedBox(height: 25),
-                  _buildTextField('Phone Number', controller: _phoneController),
-                  const SizedBox(height: 25),
-                  _buildTextField(
+                  const SizedBox(height: 40),
+                  _buildRoundedTextField('Username',
+                      controller: _usernameController, height: 50),
+                  const SizedBox(height: 30),
+                  _buildRoundedTextField('Driving License Number',
+                      controller: _licenseController, height: 50),
+                  const SizedBox(height: 30),
+                  _buildRoundedTextField('NIC Number',
+                      controller: _nicController, height: 50),
+                  const SizedBox(height: 30),
+                  _buildRoundedTextField('Phone Number',
+                      controller: _phoneController, height: 50),
+                  const SizedBox(height: 30),
+                  _buildRoundedTextField(
                     'Password',
                     controller: _passwordController,
+                    height: 50,
                     isPassword: true,
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: _handleSignUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      foregroundColor: const Color(0xFF1a4a7c),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
+                      elevation: 3,
                     ),
                     child: const Text(
                       'Sign Up',
                       style: TextStyle(
                         fontSize: 20,
-                        color: Color(0xFF1a4a7c),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -112,6 +124,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -121,25 +134,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextField(
-      String label, {
-        bool isPassword = false,
-        required TextEditingController controller,
-      }) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white54),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
+  Widget _buildRoundedTextField(
+    String label, {
+    bool isPassword = false,
+    required TextEditingController controller,
+    double height = 60,
+    double width = double.infinity,
+  }) {
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white30),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        child: TextField(
+          controller: controller,
+          obscureText: isPassword,
+          decoration: InputDecoration(
+            hintText: label,
+            hintStyle: const TextStyle(color: Colors.white),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+          ),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
-      style: const TextStyle(color: Colors.white),
     );
   }
 
@@ -151,20 +173,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String password = _passwordController.text.trim();
 
     // Validate fields
-    if (username.isEmpty || license.isEmpty || nic.isEmpty || phone.isEmpty || password.isEmpty) {
-      Get.snackbar('Error', 'Please fill in all fields');
+    if (username.isEmpty ||
+        license.isEmpty ||
+        nic.isEmpty ||
+        phone.isEmpty ||
+        password.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please fill in all fields',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     if (password.length < 6) {
-      Get.snackbar('Error', 'Password must be at least 6 characters');
+      Get.snackbar(
+        'Error',
+        'Password must be at least 6 characters',
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     try {
       // Show loading indicator
       Get.dialog(
-        const Center(child: CircularProgressIndicator()),
+        const Center(
+            child: CircularProgressIndicator(
+          color: Colors.white,
+        )),
         barrierDismissible: false,
       );
 
@@ -176,6 +217,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'Registration Failed',
           'No matching driver found with provided license/NIC',
           duration: const Duration(seconds: 5),
+          colorText: Colors.white,
+          backgroundColor: Colors.red.withOpacity(0.7),
+          snackPosition: SnackPosition.BOTTOM,
         );
         return;
       }
@@ -188,6 +232,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'Error',
           'Could not retrieve driver details',
           duration: const Duration(seconds: 5),
+          colorText: Colors.white,
+          backgroundColor: Colors.red.withOpacity(0.7),
+          snackPosition: SnackPosition.BOTTOM,
         );
         return;
       }
@@ -216,7 +263,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
         errorMessage = 'Error: ${e.toString()}';
       }
 
-      Get.snackbar('Error', errorMessage, duration: const Duration(seconds: 5));
+      Get.snackbar(
+        'Error',
+        errorMessage,
+        duration: const Duration(seconds: 5),
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 }
