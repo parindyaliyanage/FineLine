@@ -46,6 +46,7 @@ class OfficerHamburger extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               color: const Color(0xFF1a4a7c),
+              height: 80,
               child: Row(
                 children: [
                   // Back button
@@ -55,45 +56,45 @@ class OfficerHamburger extends StatelessWidget {
                     iconSize: 24,
                   ),
                   const SizedBox(width: 8),
-                  // Officer info
+                  // Officer info with avatar and text side by side
                   const CircleAvatar(
                     radius: 24,
                     backgroundColor: Colors.white,
                     child: Icon(
                       Icons.person,
-                      size: 24,
+                      size: 34,
                       color: Color(0xFF1a4a7c),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          officer.fullName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  // Officer details
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        officer.fullName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          'Badge #${officer.badgeNumber}',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                      ),
+                      Text(
+                        'Badge : ${officer.badgeNumber}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
                         ),
-                        Text(
-                          officer.department,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                      ),
+                      Text(
+                        officer.department,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
