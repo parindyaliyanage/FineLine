@@ -1,19 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/officer_model.dart';
 
 class OfficerAuthRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<Officer> signInOfficer(String badgeNumber, String password) async {
     try {
-      // Clear any existing auth state
-      await _auth.signOut();  // Add this line
-
-      debugPrint("Attempting sign in with: $badgeNumber");
-
       final query = await _firestore
           .collection('officers')
           .where('badgeNumber', isEqualTo: badgeNumber)
@@ -26,17 +19,9 @@ class OfficerAuthRepository {
 
       final officerData = query.docs.first.data();
 
-      // Verify password before Firebase Auth
+      // Keep password verification as-is
       if (officerData['password'] != password) {
         throw Exception("Invalid password");
-      }
-
-      // Only proceed with Firebase Auth if email exists
-      if (officerData['email'] != null) {
-        await _auth.signInWithEmailAndPassword(
-          email: officerData['email'],
-          password: password,
-        );
       }
 
       return Officer.fromMap(officerData);
@@ -46,17 +31,64 @@ class OfficerAuthRepository {
     }
   }
 
-  Future<void> signOut() async {
+  Future<void> registerOfficer({
+    required String badgeNumber,
+    required String fullName,
+    required String department,
+    required String station,
+    required String mobileNumber,
+    required String rank,
+    required String password,
+  }) async {
     try {
-      await _auth.signOut(); // Uses the FirebaseAuth instance
-      debugPrint("Officer signed out successfully");
+      await _firestore.collection('officers').add({
+        'badgeNumber': badgeNumber,
+        'fullName': fullName,
+        'department': department,
+        'station': station,
+        'mobileNumber': mobileNumber,
+        'rank': rank,
+        'password': password, // Keep plain password
+      });
     } catch (e) {
-      debugPrint("Error signing out: ${e.toString()}");
+      debugPrint("Registration error: ${e.toString()}");
       rethrow;
     }
   }
 
-  Future<String?> _getClientIP() async {
-    return null;
+  Future<void> updateOfficer({
+    required String badgeNumber,
+    String? station,
+    String? mobileNumber,
+    String? rank,
+    String? password,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      if (station != null) updateData['station'] = station;
+      if (mobileNumber != null) updateData['mobileNumber'] = mobileNumber;
+      if (rank != null) updateData['rank'] = rank;
+      if (password != null) updateData['password'] = password;
+
+      await _firestore
+          .collection('officers')
+          .where('badgeNumber', isEqualTo: badgeNumber)
+          .limit(1)
+          .get()
+          .then((query) {
+        if (query.docs.isNotEmpty) {
+          return query.docs.first.reference.update(updateData);
+        }
+        throw Exception("Officer not found");
+      });
+    } catch (e) {
+      debugPrint("Update error: ${e.toString()}");
+      rethrow;
+    }
+  }
+
+  Future<void> signOut() async {
+    // No Firebase Auth to sign out from
+    debugPrint("Officer signed out");
   }
 }

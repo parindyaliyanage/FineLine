@@ -2,17 +2,19 @@ class Officer {
   final String badgeNumber;
   final String fullName;
   final String department;
-  final String station;
-  final String mobileNumber;
-  final String? password; // Note: change to hashed
+  final String station;       // New field
+  final String mobileNumber;  // New field
+  final String rank;          // New field
+  final String password;      // Keep existing field
 
   Officer({
     required this.badgeNumber,
     required this.fullName,
     required this.department,
-    required this. station,
+    required this.station,
     required this.mobileNumber,
-    this.password,
+    required this.rank,
+    required this.password,
   });
 
   factory Officer.fromMap(Map<String, dynamic> map) {
@@ -20,9 +22,22 @@ class Officer {
       badgeNumber: map['badgeNumber'] ?? '',
       fullName: map['fullName'] ?? '',
       department: map['department'] ?? '',
-      station: map['station'] ?? '',
+      station: map['station'] ?? 'Unknown Station', // Default value
       mobileNumber: map['mobileNumber'] ?? '',
-      password: map['password'],
+      rank: map['rank'] ?? 'Officer', // Default value
+      password: map['password'] ?? '', // Keep required
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'badgeNumber': badgeNumber,
+      'fullName': fullName,
+      'department': department,
+      'station': station,
+      'mobileNumber': mobileNumber,
+      'rank': rank,
+      'password': password, // Keep password
+    };
   }
 }
