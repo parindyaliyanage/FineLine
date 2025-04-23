@@ -29,7 +29,16 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Sign In',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF1a4a7c),
+        elevation: 0,
+      ),
       body: Container(
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -41,74 +50,79 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Get.back(),
-                  ),
-                ),
-                const SizedBox(height: 60),
-                const Text(
-                  'Sign In',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 50),
-                _buildTextField('Driving License Number', controller: _licenseController),
-                const SizedBox(height: 25),
-                _buildTextField('Password', controller: _passwordController, isPassword: true),
-                const SizedBox(height: 50),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSignIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF1a4a7c),
-                      strokeWidth: 2,
-                    ),
-                  )
-                      : const Text(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  const Text(
                     'Sign In',
                     style: TextStyle(
-                      fontSize: 20,
-                      color: Color(0xFF1a4a7c),
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
+                  _buildRoundedTextField('Driving License Number',
+                    controller: _licenseController,
+                    height: 50,
+                  ),
+                  const SizedBox(height: 30),
+                  _buildRoundedTextField(
+                    'Password',
+                    controller: _passwordController,
+                    isPassword: true,
+                    height: 50,
+                  ),
+                  const SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _handleSignIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF1a4a7c),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      elevation: 3,
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1a4a7c),
+                        strokeWidth: 2,
+                      ),
+                    )
+                        : const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                TextButton(
-                  onPressed: () => Get.to(() => const SignUpScreen()),
-                  child: const Text(
-                    'Don\'t have an account? Sign Up',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () => Get.to(() => const SignUpScreen()),
+                    child: const Text(
+                      'Don\'t have an account? Sign Up',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                   ),
-                ),
-                if (_isLoading)
-                  const LinearProgressIndicator(
-                    color: Colors.white,
-                    backgroundColor: Colors.transparent,
-                  ),
-              ],
+                  const SizedBox(height: 20),
+                  if (_isLoading)
+                    const LinearProgressIndicator(
+                      color: Colors.white,
+                      backgroundColor: Colors.transparent,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -116,21 +130,34 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildTextField(String label, {bool isPassword = false, required TextEditingController controller}) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white54),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
+  Widget _buildRoundedTextField(
+      String label, {
+        bool isPassword = false,
+        required TextEditingController controller,
+        double height = 60,
+        double width = double.infinity,
+      }) {
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white30),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        child: TextField(
+          controller: controller,
+          obscureText: isPassword,
+          decoration: InputDecoration(
+            hintText: label,
+            hintStyle: const TextStyle(color: Colors.white),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+          ),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
-      style: const TextStyle(color: Colors.white),
     );
   }
 
@@ -166,7 +193,13 @@ class _SignInScreenState extends State<SignInScreen> {
       Get.off(() => HomePage(username: user['username']));
 
     } catch (e) {
-      Get.snackbar('Sign In Failed', e.toString());
+      Get.snackbar(
+        'Sign In Failed',
+        e.toString(),
+        colorText: Colors.white,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       setState(() => _isLoading = false);
     }

@@ -226,19 +226,19 @@ class _HomePageState extends State<HomePage> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: const Color(0xFF2c5c8f),
+              foregroundColor: Colors.white,
               elevation: 2,
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(30),
+                side: BorderSide(color: Colors.white),
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.notifications, color: Colors.black),
+                const Icon(Icons.notifications, color: Colors.white),
                 const SizedBox(width: 8),
                 const Text(
                   'Notifications',
@@ -278,13 +278,13 @@ class _HomePageState extends State<HomePage> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+          backgroundColor: const Color(0xFF2c5c8f),
+          foregroundColor: Colors.white,
           elevation: 2,
           padding: const EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(color: Colors.white),
           ),
         ),
         child: Text(
