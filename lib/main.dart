@@ -1,14 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fineline/consts.dart';
 import 'package:fineline/screens/auth_controller.dart';
 import 'package:fineline/screens/role-selection.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'firebase_options.dart';
 import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'package:fineline/repositiries/officer_auth_repository.dart';
 
 Future<void> main() async {
+  await _setup();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -20,6 +23,11 @@ Future<void> main() async {
   Get.put(AuthController());
 
   runApp(MyApp());
+}
+
+Future<void> _setup() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey = stripePublishableKey;
 }
 
 class MyApp extends StatelessWidget {

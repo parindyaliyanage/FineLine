@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart' show Dio, Headers, Options;
 import 'package:fineline/consts.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 class StripeService {
   StripeService._();
@@ -8,7 +9,15 @@ class StripeService {
 
   Future<void> makePayment() async {
     try {
-      String? result = await _createPaymentIntent(10, "usd");
+      String? paymentIntentClientSecret = await _createPaymentIntent(10, "usd");
+      if (paymentIntentClientSecret == null) return;
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntentClientSecret,
+          merchantDisplayName: "Parindya Prabhani",
+        ),
+      );
+      await _processPayment();
     } catch (e) {
       print(e);
     }
@@ -26,18 +35,31 @@ class StripeService {
         data: data,
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
-          headers:{
+          headers: {
             "Authorization": "Bearer $stripeSecretKey",
-            "Content-Type" : 'application/x-www-form-urlencoded'
+            "Content-Type": 'application/x-www-form-urlencoded'
           },
         ),
       );
-      if (response.data != null){
-        print(response.data);
-        return "";
+      if (response.data != null) {
+        return response.data["client_secret"];
       }
       return null;
-    } catch (e) {
+    }
+
+
+    catch (e) {
+      print(e);
+    }
+    return null;
+  }
+
+  Future<void> _processPayment() async{
+    try{
+      await Stripe.instance.presentPaymentSheet();
+      await Stripe.instance.confirmPaymentSheetPayment();
+
+    } catch(e) {
       print(e);
     }
   }
