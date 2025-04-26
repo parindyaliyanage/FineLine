@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:fineline/screens/driver/Hamburger.dart';
 import 'package:flutter/material.dart';
 import 'package:fineline/screens/driver/Notification.dart';
@@ -7,6 +6,7 @@ import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'PaymentHistoryPage.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -181,24 +181,15 @@ class _HomePageState extends State<HomePage> {
                         );
                       }),
                       const SizedBox(height: 16),
-                      _buildButton('Payments', Icons.payment, () {
-                        if (_pendingViolationId != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              // builder: (context) => PaymentPage(violationId: _pendingViolationId!),
-                              builder: (context) => PaymentPage(),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No pending violations to pay'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        }
-                      }),
+                  // In your build method, update the Payments button section:
+                  _buildButton('Payments', Icons.payment, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaymentHistoryPage(),
+                      ),
+                    );
+                  }),
                     ],
                   ),
                 ),
