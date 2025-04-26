@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ViolationDetailsPage extends StatelessWidget {
+class ViolationDetailsPage extends StatefulWidget {
   final Map<String, dynamic> violationData;
   final String violationId;
 
@@ -12,11 +13,16 @@ class ViolationDetailsPage extends StatelessWidget {
   });
 
   @override
+  State<ViolationDetailsPage> createState() => _ViolationDetailsPageState();
+}
+
+class _ViolationDetailsPageState extends State<ViolationDetailsPage> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Violation Details',
-        style: TextStyle(color: Colors.white),),
+          style: TextStyle(color: Colors.white),),
         backgroundColor: const Color(0xFF1a4a7c),
         foregroundColor: Colors.white,
       ),
@@ -27,7 +33,7 @@ class ViolationDetailsPage extends StatelessWidget {
           children: [
             _buildDetailCard(),
             const SizedBox(height: 20),
-            if ((violationData['status'] as String?) == 'pending')
+            if ((widget.violationData['status'] as String?) == 'pending')
               _buildPayButton(context),
           ],
         ),
@@ -43,24 +49,24 @@ class ViolationDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailRow('Violation Number:', violationId),
+            _buildDetailRow('Violation Number:', widget.violationId),
             const Divider(),
-            _buildDetailRow('Date:', _formatDate(violationData['dateTime'], includeTime: false)),
+            _buildDetailRow('Date:', _formatDate(widget.violationData['dateTime'], includeTime: false)),
             const Divider(),
-            _buildDetailRow('Time:', _formatTime(violationData['dateTime'])),
+            _buildDetailRow('Time:', _formatTime(widget.violationData['dateTime'])),
             const Divider(),
-            _buildDetailRow('Venue:', violationData['venue'] ?? 'Not specified'),
+            _buildDetailRow('Venue:', widget.violationData['venue'] ?? 'Not specified'),
             const Divider(),
-            _buildDetailRow('Vehicle Number:', violationData['vehicleNumber'] ?? 'N/A'),
+            _buildDetailRow('Vehicle Number:', widget.violationData['vehicleNumber'] ?? 'N/A'),
             const Divider(),
             _buildDetailRow('Issued by:',
-                '${violationData['officerName'] ?? 'Unknown'} (Badge: ${violationData['officerBadge'] ?? 'N/A'}'),
+                '${widget.violationData['officerName'] ?? 'Unknown'} (Badge: ${widget.violationData['officerBadge'] ?? 'N/A'}'),
             const Divider(),
             const Text(
               'Violations:',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            ...(violationData['violations'] as List?)?.map((v) =>
+            ...(widget.violationData['violations'] as List?)?.map((v) =>
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0, top: 4.0),
                   child: Text('- $v'),
@@ -68,11 +74,11 @@ class ViolationDetailsPage extends StatelessWidget {
             ) ?? [const Text('- No violations listed')],
             const Divider(),
             _buildDetailRow('Total Fine:',
-                'LKR ${(violationData['fineAmount'] as num?)?.toStringAsFixed(2) ?? '0.00'}'),
+                'LKR ${(widget.violationData['fineAmount'] as num?)?.toStringAsFixed(2) ?? '0.00'}'),
             const Divider(),
             _buildDetailRow('Status:',
-                violationData['status'] ?? 'pending',
-                statusColor: _getStatusColor(violationData['status'] ?? 'pending')),
+                widget.violationData['status'] ?? 'pending',
+                statusColor: _getStatusColor(widget.violationData['status'] ?? 'pending')),
           ],
         ),
       ),
@@ -107,16 +113,7 @@ class ViolationDetailsPage extends StatelessWidget {
   Widget _buildPayButton(BuildContext context) {
     return Center(
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PaymentPage(
-                  violationId: violationId,
-                  violationData: violationData,),
-            ),
-          );
-        },
+        onPressed: () => _navigateToPayment(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF1a4a7c),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -127,6 +124,31 @@ class ViolationDetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _navigateToPayment(BuildContext context) async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentPage(
+          violationId: widget.violationId,
+          violationData: widget.violationData,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      // Refresh the data after successful payment
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setState(() {}); // Refresh the UI
+      }
+    }
   }
 
   String _formatDate(String? dateTime, {bool includeTime = false}) {

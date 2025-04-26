@@ -1,14 +1,16 @@
 import 'package:fineline/services/stripe_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' show StripeException;
 
 class PaymentPage extends StatefulWidget {
-  final String? violationId;
-  final Map<String, dynamic>? violationData;
+  final String violationId;
+  final Map<String, dynamic> violationData;
 
   const PaymentPage({
     super.key,
-    this.violationId,
-    this.violationData,
+    required this.violationId,
+    required this.violationData,
   });
 
   @override
@@ -17,89 +19,13 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   bool isProcessing = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Verify violation data exists
-    if (widget.violationData == null || widget.violationId == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showNoViolationDataError();
-      });
-    }
-  }
-
-  void _showNoViolationDataError() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('No Violation Found'),
-          content: const Text('No violation data was found. You cannot proceed with payment.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Go back to previous screen
-              },
-              child: const Text('Go Back'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _processPayment() async {
-    setState(() {
-      isProcessing = true;
-    });
-
-    // Simulate payment processing
-    await Future.delayed(const Duration(seconds: 2));
-
-    // End processing state and navigate back
-    if (mounted) {
-      setState(() {
-        isProcessing = false;
-      });
-
-      // Simply navigate back without showing success dialog
-      Navigator.of(context).pop();
-    }
-  }
-
-  // Format date from violation data
-  String _formatDate(String? dateTime) {
-    if (dateTime == null) return 'N/A';
-    try {
-      final dt = DateTime.parse(dateTime);
-      return '${dt.day}/${dt.month}/${dt.year}';
-    } catch (e) {
-      return 'Invalid date';
-    }
-  }
+  String? paymentError;
 
   @override
   Widget build(BuildContext context) {
-    // If no violation data, show a loading indicator until the dialog appears
-    if (widget.violationData == null || widget.violationId == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Payment', style: TextStyle(color: Colors.white)),
-          backgroundColor: const Color(0xFF0D47A1),
-          iconTheme: const IconThemeData(color: Colors.white),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    // Get the fine amount from violation data
-    double fineAmount = (widget.violationData!['fineAmount'] as num?)?.toDouble() ?? 0.0;
+    // Get the fine amount directly from violationData
+    // Ensure we're using the same value that was shown in ViolationDetails
+    final fineAmount = widget.violationData['fineAmount'] as double;
 
     return Scaffold(
       appBar: AppBar(
@@ -113,7 +39,6 @@ class _PaymentPageState extends State<PaymentPage> {
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
-                // Violation Summary - Using actual violation data
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -126,43 +51,33 @@ class _PaymentPageState extends State<PaymentPage> {
                       const Text('Violation Summary',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                       const SizedBox(height: 8),
-
-                      // Display violation details from the passed violation data
-                      Text('Violation Type: ${(widget.violationData!['violations'] as List?)?.isNotEmpty == true ?
-                      (widget.violationData!['violations'] as List).first : 'Traffic Violation'}'),
-
-                      // Show date from violation data
-                      Text('Date: ${_formatDate(widget.violationData!['dateTime'])}'),
-
-                      // Show venue if available
-                      if (widget.violationData!['venue'] != null)
-                        Text('Venue: ${widget.violationData!['venue']}'),
-
-                      // Show vehicle number
-                      if (widget.violationData!['vehicleNumber'] != null)
-                        Text('Vehicle: ${widget.violationData!['vehicleNumber']}'),
-
-                      // Show violation ID
+                      Text('Violation Type: ${_getMainViolation()}'),
+                      Text('Date: ${_formatDate(widget.violationData['dateTime'])}'),
+                      if (widget.violationData['venue'] != null)
+                        Text('Venue: ${widget.violationData['venue']}'),
+                      if (widget.violationData['vehicleNumber'] != null)
+                        Text('Vehicle: ${widget.violationData['vehicleNumber']}'),
                       Text('Violation ID: ${widget.violationId}'),
-
-                      // Show fine amount
                       Text('Fine Amount: LKR ${fineAmount.toStringAsFixed(2)}'),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 const Text('Select Payment Method',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 const SizedBox(height: 16),
-
-                // Payment button
+                if (paymentError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      paymentError!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    StripeService.instance.makePayment();
-                  },
+                  onPressed: isProcessing ? null : () => _handlePayment(fineAmount),
                   icon: const Icon(Icons.credit_card),
-                  label: const Text('Pay with Credit / Debit Card'),
+                  label: const Text('Pay with Credit/Debit Card'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0D47A1),
                     foregroundColor: Colors.white,
@@ -170,13 +85,9 @@ class _PaymentPageState extends State<PaymentPage> {
                     textStyle: const TextStyle(fontSize: 16),
                   ),
                 ),
-
-                const SizedBox(height: 24),
               ],
             ),
           ),
-
-          // Loading overlay
           if (isProcessing)
             Container(
               color: Colors.black.withOpacity(0.3),
@@ -187,5 +98,54 @@ class _PaymentPageState extends State<PaymentPage> {
         ],
       ),
     );
+  }
+
+  String _getMainViolation() {
+    final violations = widget.violationData['violations'] as List?;
+    if (violations == null || violations.isEmpty) return 'Traffic Violation';
+    return violations.first.toString().split(':')[0].trim();
+  }
+
+  Future<void> _handlePayment(double amount) async {
+    setState(() {
+      isProcessing = true;
+      paymentError = null;
+    });
+
+    try {
+      await StripeService.instance.makePayment(amount, widget.violationId);
+
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment successful! Database updated.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on StripeException catch (e) {
+      setState(() {
+        paymentError = 'Payment failed: ${e.error.localizedMessage}';
+      });
+    } catch (e) {
+      setState(() {
+        paymentError = 'Error: ${e.toString()}';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => isProcessing = false);
+      }
+    }
+  }
+
+  String _formatDate(String? dateTime) {
+    if (dateTime == null) return 'N/A';
+    try {
+      final dt = DateTime.parse(dateTime);
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 }

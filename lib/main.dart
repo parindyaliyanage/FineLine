@@ -11,23 +11,25 @@ import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'package:fineline/repositiries/officer_auth_repository.dart';
 
 Future<void> main() async {
-  await _setup();
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 1. Initialize Firebase first
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize both repositories
+  // 2. Initialize Stripe
+  Stripe.publishableKey = stripePublishableKey;
+  Stripe.merchantIdentifier = 'merchant.flutter.fineline';
+  await Stripe.instance.applySettings();
+
+  // 3. Initialize GetX dependencies
   Get.lazyPut(() => DriverAuthRepository(), fenix: true);
   Get.lazyPut(() => OfficerAuthRepository());
   Get.put(AuthController());
 
+  // 4. Run the app
   runApp(MyApp());
-}
-
-Future<void> _setup() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey = stripePublishableKey;
 }
 
 class MyApp extends StatelessWidget {

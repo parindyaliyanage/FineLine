@@ -28,18 +28,10 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
     'Speeding: 5000.00',
     'Traffic Signal Violation: 3000.00',
     'Illegal Parking: 2000.00',
-    'No Seatbelt :1000',
-    'Not Carrying Driving License: 2500',
-    'Wrong Way Driving: 4000',
-    'No Helmets: 1500',
-
-    // 'Speeding': 5000.0,
-    // 'Traffic Signal Violation': 3000.0,
-    // 'Illegal Parking': 2000.0,
-    // 'No Seatbelt': 1000.0,
-    // 'Not Carrying Driving License': 2500.0,
-    // 'Wrong Way Driving': 4000.0,
-    // 'No Helmets': 1500.0,
+    'No Seatbelt: 1000.00',
+    'Not Carrying Driving License: 2500.00',
+    'Wrong Way Driving: 4000.00',
+    'No Helmets: 1500.00',
   ];
 
   final DriverRepository _driverRepo = DriverRepository();
@@ -50,7 +42,7 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Violation Submission',
-        style: TextStyle(color: Colors.white),),
+          style: TextStyle(color: Colors.white),),
         backgroundColor: const Color(0xFF1a4a7c),
         iconTheme: IconThemeData(
           color: Colors.white,
@@ -312,7 +304,7 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
         'status': 'pending',
         'isViewed': false,
         'createAt': FieldValue.serverTimestamp(),
-        'fineAmount': _calculateFineAmount(), // Add this method
+        'fineAmount': _calculateFineAmount(),
         'isPaid': false,
       };
 
@@ -347,22 +339,23 @@ class _ViolationSubmissionState extends State<ViolationSubmission> {
     }
   }
 
-//calculate fine amount based on violations
+  // Updated method that parses amounts directly from violation strings
   double _calculateFineAmount() {
-    //fine amounts for each violation type
-    const violationFines = {
-      'Speeding': 5000.0,
-      'Traffic Signal Violation': 3000.0,
-      'Illegal Parking': 2000.0,
-      'No Seatbelt': 1000.0,
-      'Not Carrying Driving License': 2500.0,
-      'Wrong Way Driving': 4000.0,
-      'No Helmets': 1500.0,
-    };
-
     double total = 0.0;
     for (var violation in _selectedViolations) {
-      total += violationFines[violation] ?? 0.0;
+      // Extract the amount from the string (e.g., "Speeding: 5000.00")
+      final parts = violation.split(':');
+      if (parts.length > 1) {
+        try {
+          final amountStr = parts[1].trim();
+          // Remove any non-numeric characters except decimal point
+          final cleanAmount = amountStr.replaceAll(RegExp(r'[^\d.]'), '');
+          total += double.parse(cleanAmount);
+        } catch (e) {
+          print('Failed to parse amount from violation: $violation');
+          // Continue with the next violation
+        }
+      }
     }
     return total;
   }

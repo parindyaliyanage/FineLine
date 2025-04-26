@@ -128,7 +128,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Driver - ${_driverData?['licenceType']?.toString().toUpperCase() ?? 'N/A'}',
+              'Driver - ${_driverData?['licenseType']?.toString().toUpperCase() ?? 'N/A'}',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],
