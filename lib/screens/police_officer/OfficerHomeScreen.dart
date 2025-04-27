@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fineline/models/officer_model.dart';
 import 'package:fineline/screens/police_officer/OfficerHamburger.dart';
-import 'package:fineline/screens/police_officer/ReviewViolation.dart';
+import 'package:fineline/screens/police_officer/ReviewViolationsScreen.dart';
 
 import 'DriverDetails.dart';
 import 'ViolationSubmission.dart';
@@ -127,7 +127,7 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
           if (text == "Review Violations") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ReviewViolation()),
+              MaterialPageRoute(builder: (context) => ReviewViolationsScreen(officer: widget.officer)),
             );
           }
           if (text == "Driver Details") {

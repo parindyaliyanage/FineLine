@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fineline/models/officer_model.dart';
 import 'package:fineline/repositiries/officer_auth_repository.dart';
+import 'OfficerDetailsScreen.dart';
 import 'OfficerSignInScreen.dart';
 
 class OfficerHamburger extends StatelessWidget {
@@ -36,122 +37,102 @@ class OfficerHamburger extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return Drawer(
+      child: Container(
+        color: Colors.white,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with back button and officer info
+            // User profile section
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              color: const Color(0xFF1a4a7c),
-              height: 80,
-              child: Row(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                 children: [
-                  // Back button
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                    iconSize: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  // Officer info with avatar and text side by side
-                  const CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 34,
-                      color: Color(0xFF1a4a7c),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Officer details
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        officer.fullName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Badge : ${officer.badgeNumber}',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        officer.department,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
                     ],
+                  ),
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Color(0xFF1a4a7c),
+                    child: Icon(
+                      Icons.person,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    officer.fullName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Badge: ${officer.badgeNumber}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    officer.department,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               ),
             ),
-
             // Menu items
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 children: [
                   _buildMenuItem(
-                    context,
-                    icon: Icons.business,
-                    title: 'Office Name',
-                    onTap: () {
-                      // Handle office name tap
-                    },
-                  ),
-                  const Divider(height: 1),
-                  _buildMenuItem(
-                    context,
                     icon: Icons.edit,
-                    title: 'Edit Profile',
+                    title: 'View Profile',
                     onTap: () {
-                      // Handle edit profile tap
+                      Navigator.pop(context);
+                      Get.to(() => OfficerDetailsScreen(officer: officer));
                     },
                   ),
-                  const Divider(height: 1),
+
                   _buildMenuItem(
-                    context,
                     icon: Icons.help,
                     title: 'Support',
                     onTap: () {
-                      // Handle support tap
+                      Navigator.pop(context);
+                      // Handle support
                     },
                   ),
-                  const Divider(height: 1),
                   _buildMenuItem(
-                    context,
                     icon: Icons.description,
                     title: 'Terms & Conditions',
                     onTap: () {
-                      // Handle terms tap
+                      Navigator.pop(context);
+                      // Handle terms
                     },
                   ),
-                  const Divider(height: 1),
                   _buildMenuItem(
-                    context,
                     icon: Icons.settings,
                     title: 'Settings',
                     onTap: () {
-                      // Handle settings tap
+                      Navigator.pop(context);
+                      // Handle settings
                     },
                   ),
-                  const Divider(height: 1),
                   _buildMenuItem(
-                    context,
                     icon: Icons.logout,
                     title: 'Log Out',
                     onTap: _handleLogout,
@@ -165,29 +146,35 @@ class OfficerHamburger extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required VoidCallback onTap,
-      }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: const Color(0xFF1a4a7c),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          color: Colors.black87,
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        child: ListTile(
+          leading: Icon(
+            icon,
+            color: const Color(0xFF1a4a7c),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          onTap: onTap,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         ),
       ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Colors.grey,
-      ),
-      onTap: onTap,
     );
   }
 }

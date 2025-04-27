@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:fineline/screens/driver/Hamburger.dart';
+import 'package:fineline/screens/driver/ViolationDashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:fineline/screens/driver/Notification.dart';
 import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'PaymentHistoryPage.dart';
+
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -181,15 +182,15 @@ class _HomePageState extends State<HomePage> {
                         );
                       }),
                       const SizedBox(height: 16),
-                  // In your build method, update the Payments button section:
-                  _buildButton('Payments', Icons.payment, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PaymentHistoryPage(),
-                      ),
-                    );
-                  }),
+                      // In your build method, update the Payments button section:
+                      _buildButton('Violation Dashboard', Icons.payment, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ViolationDashboard(),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),
