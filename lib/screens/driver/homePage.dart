@@ -7,7 +7,7 @@ import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:fineline/screens/driver/PaymentPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -24,12 +24,15 @@ class _HomePageState extends State<HomePage> {
   String? _pendingViolationId;
   int _unseenViolations = 0;
   StreamSubscription? _violationSubscription;
+  List<Map<String, dynamic>> _userViolations = [];
+  bool _isLoadingViolations = true;
 
   @override
   void initState() {
     super.initState();
     _fetchPendingViolation();
     _setupViolationListener();
+    _fetchUserViolations();
   }
 
   @override
@@ -94,6 +97,166 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _fetchUserViolations() async {
+    setState(() => _isLoadingViolations = true);
+    final user = _auth.currentUser;
+    if (user == null) {
+      setState(() => _isLoadingViolations = false);
+      return;
+    }
+
+    try {
+      // First try to get user data to find all possible identifiers
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      final userData = userDoc.data();
+
+      // Get all possible identifiers (license, NIC, etc.)
+      final identifiers = [
+        userData?['license'],
+        userData?['nic'],
+        userData?['identifier'],
+        user.uid  // Also include user ID as identifier
+      ].whereType<String>().toList();
+
+      if (identifiers.isEmpty) {
+        setState(() {
+          _userViolations = [];
+          _isLoadingViolations = false;
+        });
+        return;
+      }
+
+      // Query violations with all possible identifiers
+      final query = await _firestore.collection('violations')
+          .where('identifier', whereIn: identifiers)
+          .orderBy('dateTime', descending: true)
+          .get();
+
+      setState(() {
+        _userViolations = query.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        _isLoadingViolations = false;
+      });
+    } catch (e) {
+      print('Error fetching violations: $e');
+      setState(() {
+        _userViolations = [];
+        _isLoadingViolations = false;
+      });
+    }
+  }
+
+  bool _isSafeDriver() {
+    if (_userViolations.isEmpty) return true;
+
+    final now = DateTime.now();
+    final threeMonthsAgo = DateTime(now.year, now.month - 3, now.day);
+
+    // Check if any violation is within the last 3 months
+    bool hasRecentViolation = _userViolations.any((violation) {
+      try {
+        final dateString = violation['dateTime'];
+        if (dateString == null) return false;
+
+        final date = DateTime.parse(dateString);
+        return date.isAfter(threeMonthsAgo);
+      } catch (e) {
+        print('Error parsing violation date: $e');
+        return false;
+      }
+    });
+
+    return !hasRecentViolation;
+  }
+
+  bool _hasRisingViolations() {
+    if (_userViolations.isEmpty) return false;
+
+    final now = DateTime.now();
+    final oneMonthAgo = DateTime(now.year, now.month - 1, now.day);
+
+    // Count violations in the last month
+    int violationsThisMonth = _userViolations.where((violation) {
+      try {
+        final dateString = violation['dateTime'];
+        if (dateString == null) return false;
+
+        final date = DateTime.parse(dateString);
+        return date.isAfter(oneMonthAgo);
+      } catch (e) {
+        print('Error parsing violation date: $e');
+        return false;
+      }
+    }).length;
+
+    return violationsThisMonth >= 2;
+  }
+
+  bool _hasCriticalWarning(int demeritPointsLeft) {
+    return demeritPointsLeft <= 2;
+  }
+
+  Widget _buildWarningCards() {
+    if (_isLoadingViolations) {
+      return const SizedBox.shrink();
+    }
+
+    // Calculate demerit points
+    int totalDemeritPoints = 0;
+    for (var violation in _userViolations) {
+      if (violation['violations'] != null && violation['violations'] is List) {
+        totalDemeritPoints += (violation['violations'] as List).length;
+      }
+    }
+    final demeritPointsLeft = 6 - totalDemeritPoints.clamp(0, 6);
+
+    final cards = <Widget>[];
+
+    if (_isSafeDriver()) {
+      cards.add(
+        Card(
+          color: Colors.green[100],
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.thumb_up, color: Colors.green),
+            title: const Text("Drive safe! You haven't had a violation in 3 months."),
+          ),
+        ),
+      );
+    }
+
+    if (_hasRisingViolations()) {
+      cards.add(
+        Card(
+          color: Colors.orange[100],
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.warning, color: Colors.orange),
+            title: const Text("Caution: Your violations are increasing this month."),
+          ),
+        ),
+      );
+    }
+
+    if (_hasCriticalWarning(demeritPointsLeft)) {
+      cards.add(
+        Card(
+          color: Colors.red[100],
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListTile(
+            leading: const Icon(Icons.dangerous, color: Colors.red),
+            title: Text("Warning: Only $demeritPointsLeft demerit point${demeritPointsLeft == 1 ? '' : 's'} remaining. Drive carefully!"),
+          ),
+        ),
+      );
+    }
+
+    return Column(children: cards);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,20 +311,29 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-
+              // Logo and warning cards
               Container(
                 height: 400,
                 padding: const EdgeInsets.all(20),
-                child: Image.asset(
-                  'assets/FineLineLogo.png',
-                  fit: BoxFit.contain,
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/FineLineLogo.png',
+                      fit: BoxFit.contain,
+                      height: 200,
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: _buildWarningCards(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               // White container with buttons
               Expanded(
                 child: Container(
-                  // Change margin to 100 to accommodate the image
                   margin: const EdgeInsets.only(top: 30),
                   decoration: const BoxDecoration(
                     color: Colors.white,
@@ -182,7 +354,6 @@ class _HomePageState extends State<HomePage> {
                         );
                       }),
                       const SizedBox(height: 16),
-                      // In your build method, update the Payments button section:
                       _buildButton('Violation Dashboard', Icons.payment, () {
                         Navigator.push(
                           context,

@@ -380,13 +380,7 @@ class _ViolationDashboardState extends State<ViolationDashboard> {
               // Development mode: Show debug info
               const SizedBox(height: 30),
               const Divider(),
-              const Text(
-                'Debug Info',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(_debugInfo),
-              Text('Driver ID: $_driverIdentifier'),
-              Text('Total Violations: $_totalViolations'),
+
             ],
           ),
         ),
@@ -400,11 +394,11 @@ class _ViolationDashboardState extends State<ViolationDashboard> {
 
     // Set color based on points left
     if (pointsLeft > 4) {
-      progressColor = Colors.red;
+      progressColor = Colors.green;
     } else if (pointsLeft >= 2 && pointsLeft <= 3) {
       progressColor = Colors.orange;
     } else {
-      progressColor = Colors.green;
+      progressColor = Colors.red.shade800;
     }
 
     return Column(
