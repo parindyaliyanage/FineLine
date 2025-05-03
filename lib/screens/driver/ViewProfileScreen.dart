@@ -157,7 +157,7 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
             const Divider(),
             _buildDetailItem('Driver License', _driverData?['licenseNumber'] ?? _driverData?['license'] ?? 'N/A'),
             const Divider(),
-            _buildDetailItem('License Type', _driverData?['licenceType']?.toString().toUpperCase() ?? 'N/A'),
+            _buildDetailItem('License Type', _driverData?['licenseType']?.toString().toUpperCase() ?? 'N/A'),
             const Divider(),
             _buildDetailItem('Date of Birth', _formatDate(_driverData?['dob'])),
             const Divider(),

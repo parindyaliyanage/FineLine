@@ -4,10 +4,8 @@ import 'package:fineline/screens/driver/ViolationDashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:fineline/screens/driver/Notification.dart';
 import 'package:fineline/screens/driver/HistoryPage.dart';
-import 'package:fineline/screens/driver/PaymentPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
