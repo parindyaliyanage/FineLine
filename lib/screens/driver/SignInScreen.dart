@@ -14,14 +14,14 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final TextEditingController _licenseController = TextEditingController();
+  final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final DriverAuthRepository _authRepo = Get.find();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _licenseController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -30,99 +30,54 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Sign In',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Sign In', style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: const Color(0xFF1a4a7c),
         elevation: 0,
       ),
       body: Container(
-        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            colors: [Color(0xFF1a4a7c), Color(0xFF2c5c8f)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1a4a7c),
-              Color(0xFF2c5c8f),
-            ],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-                  const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                const Text('Sign In', style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+                const SizedBox(height: 40),
+                _buildTextField('License or NIC', _identifierController),
+                const SizedBox(height: 20),
+                _buildTextField('Password', _passwordController, isPassword: true),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _handleSignIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1a4a7c),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                   ),
-                  const SizedBox(height: 40),
-                  _buildRoundedTextField('Driving License Number',
-                    controller: _licenseController,
-                    height: 50,
-                  ),
-                  const SizedBox(height: 30),
-                  _buildRoundedTextField(
-                    'Password',
-                    controller: _passwordController,
-                    isPassword: true,
-                    height: 50,
-                  ),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSignIn,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1a4a7c),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 3,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF1a4a7c),
-                        strokeWidth: 2,
-                      ),
-                    )
-                        : const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () => Get.to(() => const SignUpScreen()),
-                    child: const Text(
-                      'Don\'t have an account? Sign Up',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_isLoading)
-                    const LinearProgressIndicator(
-                      color: Colors.white,
-                      backgroundColor: Colors.transparent,
-                    ),
-                ],
-              ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('SIGN IN', style: TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Get.to(() => const SignUpScreen()),
+                  child: const Text('Don\'t have an account? Sign Up',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
           ),
         ),
@@ -130,78 +85,75 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildRoundedTextField(
-      String label, {
-        bool isPassword = false,
-        required TextEditingController controller,
-        double height = 60,
-        double width = double.infinity,
-      }) {
-    return Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white30),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-        child: TextField(
-          controller: controller,
-          obscureText: isPassword,
-          decoration: InputDecoration(
-            hintText: label,
-            hintStyle: const TextStyle(color: Colors.white),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 15),
-          ),
-          style: const TextStyle(color: Colors.white),
-        ),
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white30)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white)),
       ),
     );
   }
 
-  Future<Map<String, dynamic>?> _getDriverData() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      return doc.data();
-    }
-    return null;
-  }
-
   void _handleSignIn() async {
-    final identifier = _licenseController.text.trim();
+    final identifier = _identifierController.text.trim();
     final password = _passwordController.text.trim();
+
+    if (identifier.isEmpty || password.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      // 1. Check users collection only
+      // Find user in Firestore
       final user = await _authRepo.getAppUserByIdentifier(identifier);
       if (user == null) {
-        throw Exception('No app account found. Please sign up first.');
+        throw 'No account found. Please sign up first.';
       }
 
-      // 2. Sign in with email (license@fineline.com)
-      await _authRepo.signInWithEmailAndPassword(
-        '${user['license']}@fineline.com',
-        password,
-      );
+      // Verify auth record exists
+      final email = user['email'];
+      await _authRepo.signInWithEmailAndPassword(email, password);
 
-      // 3. Navigate to home
+      // Verify Firestore document exists
+      final authUser = FirebaseAuth.instance.currentUser;
+      if (authUser != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(authUser.uid)
+            .get();
+        if (!doc.exists) {
+          await authUser.delete();
+          throw 'Account data missing. Please sign up again.';
+        }
+      }
+
       Get.off(() => HomePage(username: user['username']));
-
     } catch (e) {
-      Get.snackbar(
-        'Sign In Failed',
-        e.toString(),
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _showError(e.toString());
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      colorText: Colors.white,
+      backgroundColor: Colors.red.withOpacity(0.7),
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 }

@@ -8,22 +8,49 @@ class DriverAuthRepository extends BaseAuthRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   FirebaseFirestore get firestore => _firestore;
 
-  /// Checks if driver exists in official 'drivers' collection
-  Future<bool> isDriverRegistered(String license, String nic) async {
-    final query = await _firestore.collection('drivers')
-        .where('licenseNumber', isEqualTo: license)
-        .where('nic', isEqualTo: nic)
-        .limit(1)
-        .get();
-    return query.docs.isNotEmpty;
+  Future<Map<String, dynamic>?> getDriverByIdentifier(String identifier) async {
+    try {
+      // First check by license in drivers collection
+      final licenseQuery = await _firestore.collection('drivers')
+          .where('licenseNumber', isEqualTo: identifier.trim())
+          .limit(1)
+          .get();
+
+      if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
+
+      // Fallback to NIC search in drivers collection
+      final nicQuery = await _firestore.collection('drivers')
+          .where('nic', isEqualTo: identifier.trim())
+          .limit(1)
+          .get();
+
+      return nicQuery.docs.isEmpty ? null : nicQuery.docs.first.data();
+    } catch (e) {
+      if (kDebugMode) print('Driver lookup error: $e');
+      return null;
+    }
   }
 
-  /// Gets official driver details from 'drivers' collection
+  Future<bool> isDriverRegistered(String license, String nic) async {
+    try {
+      final query = await _firestore.collection('drivers')
+          .where('licenseNumber', isEqualTo: license.trim())
+          .where('nic', isEqualTo: nic.trim())
+          .limit(1)
+          .get();
+
+      return query.docs.isNotEmpty;
+    } catch (e) {
+      if (kDebugMode) print('Error checking driver registration: $e');
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>?> getOfficialDriverData(String license, String nic) async {
     try {
       final query = await _firestore.collection('drivers')
-          .where('licenseNumber', isEqualTo: license)
-          .where('nic', isEqualTo: nic)
+          .where('licenseNumber', isEqualTo: license.trim())
+          .where('nic', isEqualTo: nic.trim())
           .limit(1)
           .get();
 
@@ -46,8 +73,6 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
-  /// Saves driver details to 'users' collection after validation
-
   Future<void> saveDriverDetails({
     required String username,
     required String license,
@@ -60,21 +85,18 @@ class DriverAuthRepository extends BaseAuthRepository {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      // Only save user-specific data in users collection
       final userData = {
         'username': username,
-        'license': license, // Changed from licenseNumber to license
-        'nic': nic,
-        'phone': phone,
-        'email': email,
+        'license': license.trim(),
+        'nic': nic.trim(),
+        'phone': phone.trim(),
+        'email': email.trim(),
         'uid': user.uid,
         'role': 'driver',
         'registration_date': FieldValue.serverTimestamp(),
       };
 
       await _firestore.collection('users').doc(user.uid).set(userData);
-
-      if (kDebugMode) print('Driver data saved to users collection');
     } catch (e) {
       if (kDebugMode) print('Error saving driver details: $e');
       rethrow;
@@ -93,58 +115,34 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
-  /// Finds driver in 'users' collection by license or NIC
-  Future<Map<String, dynamic>?> getDriverByIdentifier(String identifier) async {
+  Future<Map<String, dynamic>?> getAppUserByIdentifier(String identifier) async {
     try {
-      // First check by license in drivers collection
-      final licenseQuery = await _firestore.collection('drivers')
-          .where('licenseNumber', isEqualTo: identifier)
+      final licenseQuery = await _firestore.collection('users')
+          .where('license', isEqualTo: identifier.trim())
           .limit(1)
           .get();
 
       if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
 
-      // Fallback to NIC search in drivers collection
-      final nicQuery = await _firestore.collection('drivers')
-          .where('nic', isEqualTo: identifier)
+      final nicQuery = await _firestore.collection('users')
+          .where('nic', isEqualTo: identifier.trim())
           .limit(1)
           .get();
 
       return nicQuery.docs.isEmpty ? null : nicQuery.docs.first.data();
     } catch (e) {
-      if (kDebugMode) print('Driver lookup error: $e');
+      if (kDebugMode) print('User lookup error: $e');
       return null;
     }
   }
 
-  /// Utility method to check internet connection
   @override
   Future<bool> checkInternet() async {
-    // Implement your internet check logic
     return true;
-  }
-
-  // For SIGN IN - Checks users collection only
-  Future<Map<String, dynamic>?> getAppUserByIdentifier(String identifier) async {
-    // Check by license first
-    final licenseQuery = await _firestore.collection('users')
-        .where('license', isEqualTo: identifier)
-        .limit(1)
-        .get();
-
-    if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
-
-    // Fallback to NIC search
-    final nicQuery = await _firestore.collection('users')
-        .where('nic', isEqualTo: identifier)
-        .limit(1)
-        .get();
-
-    return nicQuery.docs.isEmpty ? null : nicQuery.docs.first.data();
   }
 
   @override
   Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
+    await _auth.signOut();
   }
 }

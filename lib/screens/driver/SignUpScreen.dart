@@ -18,8 +18,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   final DriverAuthRepository _authRepo = Get.find();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,6 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _nicController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -35,98 +38,62 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Sign Up',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Sign Up', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF1a4a7c),
+        iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: Container(
-        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            colors: [Color(0xFF1a4a7c), Color(0xFF2c5c8f)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1a4a7c),
-              Color(0xFF2c5c8f),
-            ],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-                  const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                const Text('Sign Up', style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+                const SizedBox(height: 40),
+                _buildTextField('Username', _usernameController),
+                const SizedBox(height: 20),
+                _buildTextField('Driving License Number', _licenseController),
+                const SizedBox(height: 20),
+                _buildTextField('NIC Number', _nicController),
+                const SizedBox(height: 20),
+                _buildTextField('Phone Number', _phoneController),
+                const SizedBox(height: 20),
+                _buildTextField('Password', _passwordController, isPassword: true),
+                const SizedBox(height: 20),
+                _buildTextField('Confirm Password', _confirmPasswordController, isPassword: true),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _handleSignUp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1a4a7c),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                   ),
-                  const SizedBox(height: 40),
-                  _buildRoundedTextField('Username',
-                      controller: _usernameController, height: 50),
-                  const SizedBox(height: 30),
-                  _buildRoundedTextField('Driving License Number',
-                      controller: _licenseController, height: 50),
-                  const SizedBox(height: 30),
-                  _buildRoundedTextField('NIC Number',
-                      controller: _nicController, height: 50),
-                  const SizedBox(height: 30),
-                  _buildRoundedTextField('Phone Number',
-                      controller: _phoneController, height: 50),
-                  const SizedBox(height: 30),
-                  _buildRoundedTextField(
-                    'Password',
-                    controller: _passwordController,
-                    height: 50,
-                    isPassword: true,
-                  ),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: _handleSignUp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1a4a7c),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 3,
-                    ),
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to SignInScreen
-                      Get.to(() => SignInScreen());
-                    },
-                    child: const Text(
-                      'Already have an account? Sign In',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('SIGN UP', style: TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Get.to(() => const SignInScreen()),
+                  child: const Text('Already have an account? Sign In',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
           ),
         ),
@@ -134,113 +101,72 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildRoundedTextField(
-    String label, {
-    bool isPassword = false,
-    required TextEditingController controller,
-    double height = 60,
-    double width = double.infinity,
-  }) {
-    return Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white30),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-        child: TextField(
-          controller: controller,
-          obscureText: isPassword,
-          decoration: InputDecoration(
-            hintText: label,
-            hintStyle: const TextStyle(color: Colors.white),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 15),
-          ),
-          style: const TextStyle(color: Colors.white),
-        ),
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white30)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white)),
       ),
     );
   }
 
   void _handleSignUp() async {
-    final String username = _usernameController.text.trim();
-    final String license = _licenseController.text.trim().toUpperCase();
-    final String nic = _nicController.text.trim().toUpperCase();
-    final String phone = _phoneController.text.trim();
-    final String password = _passwordController.text.trim();
+    final username = _usernameController.text.trim();
+    final license = _licenseController.text.trim();
+    final nic = _nicController.text.trim();
+    final phone = _phoneController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
-    // Validate fields
-    if (username.isEmpty ||
-        license.isEmpty ||
-        nic.isEmpty ||
-        phone.isEmpty ||
-        password.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please fill in all fields',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-        snackPosition: SnackPosition.BOTTOM,
-      );
+    if (username.isEmpty || license.isEmpty || nic.isEmpty ||
+        phone.isEmpty || password.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showError('Passwords do not match');
       return;
     }
 
     if (password.length < 6) {
-      Get.snackbar(
-        'Error',
-        'Password must be at least 6 characters',
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _showError('Password must be at least 6 characters');
       return;
     }
 
-    try {
-      // Show loading indicator
-      Get.dialog(
-        const Center(
-            child: CircularProgressIndicator(
-          color: Colors.white,
-        )),
-        barrierDismissible: false,
-      );
+    setState(() => _isLoading = true);
 
-      // 1. Validate driver credentials
+    try {
+      // Check if driver exists in official records
       final isRegistered = await _authRepo.isDriverRegistered(license, nic);
       if (!isRegistered) {
-        Get.back();
-        Get.snackbar(
-          'Registration Failed',
-          'No matching driver found with provided license/NIC',
-          duration: const Duration(seconds: 5),
-          colorText: Colors.white,
-          backgroundColor: Colors.red.withOpacity(0.7),
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
+        throw 'No matching driver found with provided license/NIC';
       }
 
-      // 2. Get official data (now that we know they're registered)
+      // Check if email already exists
+      final email = '$license$nic@fineline.com';
+      final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      if (methods.isNotEmpty) {
+        throw 'Account already exists for this license/NIC';
+      }
+
+      // Get official data
       final officialData = await _authRepo.getOfficialDriverData(license, nic);
       if (officialData == null) {
-        Get.back();
-        Get.snackbar(
-          'Error',
-          'Could not retrieve driver details',
-          duration: const Duration(seconds: 5),
-          colorText: Colors.white,
-          backgroundColor: Colors.red.withOpacity(0.7),
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
+        throw 'Could not retrieve driver details';
       }
 
-      // 3. Create account
-      final String email = '$license@fineline.com';
+      // Create account
       await _authRepo.registerWithEmailAndPassword(email, password);
       await _authRepo.saveDriverDetails(
         username: username,
@@ -251,26 +177,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
         officialData: officialData,
       );
 
-      Get.back();
       Get.off(() => HomePage(username: username));
     } catch (e) {
-      Get.back();
-      String errorMessage = 'Registration failed';
-
-      if (e is FirebaseAuthException) {
-        errorMessage = 'Auth error: ${e.message}';
-      } else {
-        errorMessage = 'Error: ${e.toString()}';
-      }
-
-      Get.snackbar(
-        'Error',
-        errorMessage,
-        duration: const Duration(seconds: 5),
-        colorText: Colors.white,
-        backgroundColor: Colors.red.withOpacity(0.7),
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _showError(e.toString());
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  void _showError(String message) {
+    Get.snackbar(
+      'Error',
+      message,
+      colorText: Colors.white,
+      backgroundColor: Colors.red.withOpacity(0.7),
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 }

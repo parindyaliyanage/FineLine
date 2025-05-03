@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/officer_model.dart';
 
+
 class OfficerAuthRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
