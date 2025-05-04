@@ -82,10 +82,20 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
                 ),
               ),
 
+              // Add the logo image here
+              Container(
+                height: 300, // Adjusted height to fit better
+                padding: const EdgeInsets.all(20),
+                child: Image.asset(
+                  'assets/FineLineLogo.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+
               // White container with buttons
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 300),
+                  margin: const EdgeInsets.only(top: 20), // Reduced top margin
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -137,7 +147,7 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
             );
           }
         },
-        icon: Icon(icon, color: Color(0xFF1a4a7c)),
+        icon: Icon(icon, color: const Color(0xFF1a4a7c)),
         label: Text(
           text,
           style: const TextStyle(
