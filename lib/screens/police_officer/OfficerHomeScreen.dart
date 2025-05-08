@@ -84,7 +84,7 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
 
               // Add the logo image here
               Container(
-                height: 340, // Adjusted height to fit better
+                height: 300, // Adjusted height to fit better
                 padding: const EdgeInsets.all(20),
                 child: Image.asset(
                   'assets/FineLineLogo.png',
@@ -95,7 +95,7 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
               // White container with buttons
               Expanded(
                 child: Container(
-                  margin: const EdgeInsets.only(top: 60), // Reduced top margin
+                  margin: const EdgeInsets.only(top: 20), // Reduced top margin
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
@@ -124,57 +124,48 @@ class _OfficerHomeScreenState extends State<OfficerHomeScreen> {
 
   Widget _buildButton(String text, IconData icon) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        leading: Icon(icon, color: Color(0xFF1a4a7c), size: 28),
-        title: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1a4a7c),
-          ),
-        ),
-        onTap: () {
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: ElevatedButton.icon(
+        onPressed: () {
           if (text == "Violation Submission") {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ViolationSubmission(officer: widget.officer),
-              ),
+              MaterialPageRoute(builder: (context) => ViolationSubmission(officer: widget.officer)),
             );
           }
           if (text == "Review Violations") {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ReviewViolationsScreen(officer: widget.officer),
-              ),
+              MaterialPageRoute(builder: (context) => ReviewViolationsScreen(officer: widget.officer)),
             );
           }
           if (text == "Driver Details") {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => DriverDetails(),
-              ),
+              MaterialPageRoute(builder: (context) => DriverDetails()),
             );
           }
         },
+        icon: Icon(icon, color: const Color(0xFF1a4a7c)),
+        label: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1a4a7c),
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: Colors.grey.shade300),
+          ),
+        ),
       ),
     );
   }
-
 }

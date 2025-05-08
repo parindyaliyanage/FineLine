@@ -22,8 +22,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final DriverAuthRepository _authRepo = Get.find();
   bool _isLoading = false;
-  bool _obscurePassword = true;  // Default to true to hide password
-  bool _obscureConfirmPassword = true;  // Default to true to hide confirm password
 
   @override
   void dispose() {
@@ -39,14 +37,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1a4a7c),
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: const Text('Sign Up', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1a4a7c),
+        iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: Container(
@@ -59,105 +53,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    kToolbarHeight,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Fill in your details to get started',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                      _buildTextField('Username', _usernameController),
-                      const SizedBox(height: 20),
-                      _buildTextField('Driving License Number', _licenseController),
-                      const SizedBox(height: 20),
-                      _buildTextField('NIC Number', _nicController),
-                      const SizedBox(height: 20),
-                      _buildTextField('Phone Number', _phoneController),
-                      const SizedBox(height: 20),
-                      _buildPasswordField('Password', _passwordController, _obscurePassword, (value) {
-                        setState(() => _obscurePassword = value);
-                      }),
-                      const SizedBox(height: 20),
-                      _buildPasswordField('Confirm Password', _confirmPasswordController, _obscureConfirmPassword, (value) {
-                        setState(() => _obscureConfirmPassword = value);
-                      }),
-                      const SizedBox(height: 30),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _handleSignUp,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF1a4a7c),
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF1a4a7c),
-                          ),
-                        )
-                            : const Text(
-                          'SIGN UP',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                const Text('Sign Up', style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+                const SizedBox(height: 40),
+                _buildTextField('Username', _usernameController),
+                const SizedBox(height: 20),
+                _buildTextField('Driving License Number', _licenseController),
+                const SizedBox(height: 20),
+                _buildTextField('NIC Number', _nicController),
+                const SizedBox(height: 20),
+                _buildTextField('Phone Number', _phoneController),
+                const SizedBox(height: 20),
+                _buildTextField('Password', _passwordController, isPassword: true),
+                const SizedBox(height: 20),
+                _buildTextField('Confirm Password', _confirmPasswordController, isPassword: true),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _handleSignUp,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF1a4a7c),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20, top: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Already have an account? ",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        GestureDetector(
-                          onTap: () => Get.to(() => const SignInScreen()),
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : const Text('SIGN UP', style: TextStyle(fontSize: 18)),
+                ),
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Get.to(() => const SignInScreen()),
+                  child: const Text('Already have an account? Sign In',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
           ),
         ),
@@ -165,67 +101,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isPassword = false}) {
     return TextField(
       controller: controller,
+      obscureText: isPassword,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-        ),
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white30)),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(
-      String label,
-      TextEditingController controller,
-      bool obscureText,
-      Function(bool) onVisibilityChanged,
-      ) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,  // This will hide password by default
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.white),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white70,
-          ),
-          onPressed: () {
-            onVisibilityChanged(!obscureText);
-          },
-        ),
+            borderRadius: BorderRadius.circular(30),
+            borderSide: const BorderSide(color: Colors.white)),
       ),
     );
   }
