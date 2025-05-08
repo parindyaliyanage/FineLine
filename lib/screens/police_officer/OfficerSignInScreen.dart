@@ -31,15 +31,10 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
         _passwordController.text.trim(),
       );
 
-      // Clear sensitive data before navigation
       _passwordController.clear();
-
-      Get.offAll(() => OfficerHomeScreen(officer: officer),
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut);
-
+      Get.offAll(() => OfficerHomeScreen(officer: officer));
     } catch (e) {
-      debugPrint("Full Error: $e");
+      debugPrint("Error: $e");
       String errorMessage = 'Authentication failed';
       if (e.toString().contains('PERMISSION_DENIED')) {
         errorMessage = 'System maintenance in progress';
@@ -53,9 +48,6 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red[400]!,
         colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
       );
     } finally {
       if (mounted) {
@@ -70,91 +62,89 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            colors: [Color(0xFF1a4a7c), Color(0xFF2c5c8f)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1a4a7c),
-              Color(0xFF2c5c8f),
-            ],
           ),
         ),
         child: SafeArea(
           child: Form(
             key: _formKey,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Back button
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () {
-                        _passwordController.clear();
-                        Get.offAll(() => RoleSelectionScreen());
-                      },
+            child: Column(
+              children: [
+                // Back button
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () {
+                      _passwordController.clear();
+                      Get.offAll(() => RoleSelectionScreen());
+                    },
+                  ),
+                ),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Police Officer Sign In',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        _buildTextField(
+                          label: 'Badge Number',
+                          controller: _badgeNumberController,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 25),
+                        _buildPasswordField(),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  const Text(
-                    'Police Officer Sign In',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 50),
-                  _buildTextField(
-                    label: 'Badge Number',
-                    controller: _badgeNumberController,
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 25),
-                  _buildPasswordField(),
-                  const SizedBox(height: 50),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _signInOfficer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                ),
+
+                // Sign In Button at bottom
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signInOfficer,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                       ),
-                      elevation: 4,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF1a4a7c),
-                        strokeWidth: 2,
-                      ),
-                    )
-                        : const Text(
-                      'Sign In',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Color(0xFF1a4a7c),
-                        fontWeight: FontWeight.bold,
+                      child: _isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF1a4a7c),
+                        ),
+                      )
+                          : const Text(
+                        'Sign In',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Color(0xFF1a4a7c),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16.0),
-                      child: LinearProgressIndicator(
-                        color: Colors.white,
-                        backgroundColor: Colors.transparent,
-                        minHeight: 2,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -174,19 +164,20 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white54),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Colors.white),
         ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
         ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        errorStyle: const TextStyle(color: Colors.red),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -208,26 +199,27 @@ class _OfficerSignInScreenState extends State<OfficerSignInScreen> {
       decoration: InputDecoration(
         labelText: 'Password',
         labelStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Colors.white),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            _obscurePassword ? Icons.visibility_off : Icons.visibility,
             color: Colors.white70,
           ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white54),
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-        errorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.red),
-        ),
-        errorStyle: const TextStyle(color: Colors.red),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
