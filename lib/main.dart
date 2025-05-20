@@ -1,6 +1,8 @@
 import 'package:fineline/consts.dart';
 import 'package:fineline/screens/auth_controller.dart';
 import 'package:fineline/screens/role-selection.dart';
+import 'package:fineline/services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
@@ -12,13 +14,18 @@ import 'package:fineline/repositiries/officer_auth_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Foreground notification: ${message.notification?.title}");
+  });
+
+  await NotificationService.initialize();
 
   Stripe.publishableKey = stripePublishableKey;
   Stripe.merchantIdentifier = 'merchant.flutter.fineline';
   await Stripe.instance.applySettings();
+
 
   Get.lazyPut(() => DriverAuthRepository(), fenix: true);
   Get.lazyPut(() => OfficerAuthRepository());

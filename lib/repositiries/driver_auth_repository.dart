@@ -10,7 +10,7 @@ class DriverAuthRepository extends BaseAuthRepository {
 
   Future<Map<String, dynamic>?> getDriverByIdentifier(String identifier) async {
     try {
-      // First check by license in drivers collection
+
       final licenseQuery = await _firestore.collection('drivers')
           .where('licenseNumber', isEqualTo: identifier.trim())
           .limit(1)
@@ -18,7 +18,6 @@ class DriverAuthRepository extends BaseAuthRepository {
 
       if (licenseQuery.docs.isNotEmpty) return licenseQuery.docs.first.data();
 
-      // Fallback to NIC search in drivers collection
       final nicQuery = await _firestore.collection('drivers')
           .where('nic', isEqualTo: identifier.trim())
           .limit(1)
@@ -46,6 +45,7 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
+  //sign up
   Future<Map<String, dynamic>?> getOfficialDriverData(String license, String nic) async {
     try {
       final query = await _firestore.collection('drivers')
@@ -61,6 +61,7 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
+  //sign up
   Future<void> registerWithEmailAndPassword(String email, String password) async {
     try {
       await _auth.createUserWithEmailAndPassword(
@@ -103,6 +104,7 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
+  //sign in
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(
@@ -115,6 +117,7 @@ class DriverAuthRepository extends BaseAuthRepository {
     }
   }
 
+  //sign in
   Future<Map<String, dynamic>?> getAppUserByIdentifier(String identifier) async {
     try {
       final licenseQuery = await _firestore.collection('users')
