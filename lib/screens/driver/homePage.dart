@@ -6,6 +6,7 @@ import 'package:fineline/screens/driver/Notification.dart';
 import 'package:fineline/screens/driver/HistoryPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fineline/services/notification_service.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
@@ -31,12 +32,25 @@ class _HomePageState extends State<HomePage> {
     _fetchPendingViolation();
     _setupViolationListener();
     _fetchUserViolations();
+    _saveDeviceToken();
   }
 
   @override
   void dispose() {
     _violationSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _saveDeviceToken() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final token = await NotificationService.getDeviceToken();
+    if (token != null) {
+      await _firestore.collection('users').doc(user.uid).update({
+        'fcmToken': token,
+      });
+    }
   }
 
   Future<void> _fetchPendingViolation() async {
@@ -329,7 +343,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // White container with buttons
+              // White container
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 30),
