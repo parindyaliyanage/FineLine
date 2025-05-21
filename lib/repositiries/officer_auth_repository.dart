@@ -1,10 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert'; // for the utf8.encode method
 import '../models/officer_model.dart';
-
 
 class OfficerAuthRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Helper method to hash passwords
+  String _hashPassword(String password) {
+    var bytes = utf8.encode(password); // Convert password to bytes
+    var digest = sha256.convert(bytes); // Hash the password using SHA-256
+    return digest.toString();
+  }
 
   Future<void> registerOfficer({
     required String badgeNumber,
@@ -16,6 +24,9 @@ class OfficerAuthRepository {
     required String password,
   }) async {
     try {
+      // Hash the password before storing
+      final hashedPassword = _hashPassword(password);
+
       await _firestore.collection('officers').add({
         'badgeNumber': badgeNumber,
         'fullName': fullName,
@@ -23,7 +34,7 @@ class OfficerAuthRepository {
         'station': station,
         'mobileNumber': mobileNumber,
         'rank': rank,
-        'password': password,
+        'password': hashedPassword, // Store the hashed password
       });
     } catch (e) {
       debugPrint("Registration error: ${e.toString()}");
@@ -44,8 +55,9 @@ class OfficerAuthRepository {
       }
 
       final officerData = query.docs.first.data();
+      final hashedPassword = _hashPassword(password);
 
-      if (officerData['password'] != password) {
+      if (officerData['password'] != hashedPassword) {
         throw Exception("Invalid password");
       }
 
@@ -55,37 +67,6 @@ class OfficerAuthRepository {
       rethrow;
     }
   }
-
-  // Future<void> updateOfficer({
-  //   required String badgeNumber,
-  //   String? station,
-  //   String? mobileNumber,
-  //   String? rank,
-  //   String? password,
-  // }) async {
-  //   try {
-  //     final updateData = <String, dynamic>{};
-  //     if (station != null) updateData['station'] = station;
-  //     if (mobileNumber != null) updateData['mobileNumber'] = mobileNumber;
-  //     if (rank != null) updateData['rank'] = rank;
-  //     if (password != null) updateData['password'] = password;
-  //
-  //     await _firestore
-  //         .collection('officers')
-  //         .where('badgeNumber', isEqualTo: badgeNumber)
-  //         .limit(1)
-  //         .get()
-  //         .then((query) {
-  //       if (query.docs.isNotEmpty) {
-  //         return query.docs.first.reference.update(updateData);
-  //       }
-  //       throw Exception("Officer not found");
-  //     });
-  //   } catch (e) {
-  //     debugPrint("Update error: ${e.toString()}");
-  //     rethrow;
-  //   }
-  // }
 
   Future<void> signOut() async {
     debugPrint("Officer signed out");

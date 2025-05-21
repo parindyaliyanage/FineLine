@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
-import 'firebase_options.dart';
+import 'services/hashed.dart';
 import 'package:fineline/repositiries/driver_auth_repository.dart';
 import 'package:fineline/repositiries/officer_auth_repository.dart';
 
@@ -30,6 +30,8 @@ Future<void> main() async {
   Get.lazyPut(() => DriverAuthRepository(), fenix: true);
   Get.lazyPut(() => OfficerAuthRepository());
   Get.put(AuthController());
+
+
 
   runApp(MyApp());
 }
