@@ -35,6 +35,8 @@ class _HomePageState extends State<HomePage> {
     _saveDeviceToken();
   }
 
+
+
   @override
   void dispose() {
     _violationSubscription?.cancel();
@@ -78,12 +80,25 @@ class _HomePageState extends State<HomePage> {
     final user = _auth.currentUser;
     if (user == null) return;
 
-    _violationSubscription = _firestore.collection('violations')
-        .where('identifier', whereIn: [user.uid])
-        .where('isViewed', isEqualTo: false)
-        .snapshots()
-        .listen((snapshot) {
-      setState(() => _unseenViolations = snapshot.size);
+    // First get user data to find all possible identifiers
+    _firestore.collection('users').doc(user.uid).snapshots().listen((userDoc) {
+      final userData = userDoc.data();
+      final identifiers = [
+        userData?['license'],
+        userData?['nic'],
+        user.uid
+      ].whereType<String>().toList();
+
+      if (identifiers.isEmpty) return;
+
+      _violationSubscription?.cancel();
+      _violationSubscription = _firestore.collection('violations')
+          .where('identifier', whereIn: identifiers)
+          .where('isViewed', isEqualTo: false)
+          .snapshots()
+          .listen((snapshot) {
+        setState(() => _unseenViolations = snapshot.size);
+      });
     });
   }
 
@@ -160,6 +175,7 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+
 
   bool _isSafeDriver() {
     if (_userViolations.isEmpty) return true;
@@ -390,7 +406,7 @@ class _HomePageState extends State<HomePage> {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Stack(
-        alignment: Alignment.topRight,
+        alignment: Alignment.center,
         children: [
           ElevatedButton(
             onPressed: () async {
@@ -413,7 +429,36 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.notifications, color: Colors.white),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(Icons.notifications, color: Colors.white),
+                    if (_unseenViolations > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            _unseenViolations.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   'Notifications',
@@ -425,22 +470,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          if (_unseenViolations > 0)
-            Positioned(
-              right: 8,
-              top: 8,
-              child: CircleAvatar(
-                radius: 10,
-                backgroundColor: Colors.red,
-                child: Text(
-                  _unseenViolations.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
