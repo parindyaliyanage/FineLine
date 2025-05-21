@@ -8,7 +8,12 @@ class ViolationRepository {
 
   Future<void> submitViolation(Map<String, dynamic> violationData) async {
     try {
-      await _firestore.collection('violations').add(violationData);
+      // Add the violation with isViewed: false to mark as unread
+      await _firestore.collection('violations').add({
+        ...violationData,
+        'isViewed': false, // Mark as unread
+      });
+
       await _sendViolationNotification(
         violationData['identifier'],
         violationData['driverName'],
@@ -19,50 +24,44 @@ class ViolationRepository {
     }
   }
 
+  // Update the _sendViolationNotification method in violation_repository.dart
   Future<void> _sendViolationNotification(
       String identifier,
       String driverName,
       double fineAmount,
       ) async {
     try {
-      // Solution 1: Use separate queries and combine results
-      final licenseQuery = await _firestore.collection('users')
+      // Find all users that might match this identifier (license or NIC)
+      final usersQuery = await _firestore.collection('users')
           .where('license', isEqualTo: identifier)
-          .limit(1)
           .get();
 
       final nicQuery = await _firestore.collection('users')
           .where('nic', isEqualTo: identifier)
-          .limit(1)
           .get();
 
-      // Combine results
-      final driverDocs = [...licenseQuery.docs, ...nicQuery.docs];
-      debugPrint('Found ${driverDocs.length} driver records');
+      // Combine results and get unique users
+      final allUsers = [...usersQuery.docs, ...nicQuery.docs]
+          .map((doc) => doc.data())
+          .toSet();
 
-      if (driverDocs.isNotEmpty) {
-        final driverData = driverDocs.first.data();
-        //
-        debugPrint('Driver data: ${driverData.toString()}');
-
-
-        final fcmToken = driverData['fcmToken'];
-        //
-        debugPrint('FCM Token from Firestore: $fcmToken');
-
-        if (fcmToken != null) {
-          // For actual implementation, use Cloud Functions
-          debugPrint('Sending notification to token: $fcmToken');
+      for (final user in allUsers) {
+        final fcmToken = user['fcmToken'];
+        if (fcmToken != null && fcmToken is String) {
+          // Send actual notification
+          await _messaging.sendMessage(
+            to: fcmToken,
+            data: {
+              'type': 'violation',
+              'title': 'New Traffic Violation',
+              'body': 'New violation for $driverName - LKR $fineAmount',
+            },
+          );
         }
       }
-
-      // Alternative Solution 2: Use whereIn with all possible identifiers
-      // final query = await _firestore.collection('users')
-      //     .where('identifier', whereIn: [identifier])
-      //     .limit(1)
-      //     .get();
     } catch (e) {
       debugPrint('Error sending notification: $e');
+
     }
   }
 }

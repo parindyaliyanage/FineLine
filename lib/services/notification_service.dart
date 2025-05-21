@@ -36,8 +36,27 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
 
+  // static Future<String?> getDeviceToken() async {
+  //   return await _firebaseMessaging.getToken();
+  // }
   static Future<String?> getDeviceToken() async {
-    return await _firebaseMessaging.getToken();
+    try {
+      // Request permission (required for iOS)
+      await _firebaseMessaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      // Get the token
+      String? token = await _firebaseMessaging.getToken();
+
+      print('FCM Token: $token');
+      return token;
+    } catch (e) {
+      print('Error getting FCM token: $e');
+      return null;
+    }
   }
 
   static void _showNotification(RemoteMessage message) {
@@ -62,6 +81,8 @@ class NotificationService {
       );
     }
   }
+
+
 
   static void _handleMessage(RemoteMessage message) {
     // You can handle navigation when notification is tapped

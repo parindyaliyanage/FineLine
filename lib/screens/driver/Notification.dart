@@ -39,6 +39,16 @@ class _NotificationPageState extends State<NotificationPage> {
     });
   }
 
+  Future<void> _markAsViewed(String violationId) async {
+    try {
+      await _firestore.collection('violations').doc(violationId).update({
+        'isViewed': true,
+      });
+    } catch (e) {
+      debugPrint('Error marking violation as viewed: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,11 +80,16 @@ class _NotificationPageState extends State<NotificationPage> {
             itemBuilder: (context, index) {
               final violation = snapshot.data!.docs[index];
               final data = violation.data();
+              final isNew = data['isViewed'] == false;
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: isNew ? Colors.blue[50] : null, // Highlight new violations
                 child: InkWell(
                   onTap: () {
+                    if (isNew) {
+                      _markAsViewed(violation.id);
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -90,30 +105,53 @@ class _NotificationPageState extends State<NotificationPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data['violations']?.first ?? 'Violation',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (isNew)
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 8),
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  Expanded(
+                                    child: Text(
+                                      data['violations']?.first ?? 'Violation',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'LKR ${(data['fineAmount'] as num?)?.toStringAsFixed(2) ?? '0.00'}',
-                              style: TextStyle(
-                                color: Colors.red[700],
-                                fontWeight: FontWeight.bold,
+                              const SizedBox(height: 4),
+                              Text(
+                                'LKR ${(data['fineAmount'] as num?)?.toStringAsFixed(2) ?? '0.00'}',
+                                style: TextStyle(
+                                  color: Colors.red[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            // Removed the status Chip from here
+                            if (isNew)
+                              const Chip(
+                                label: Text('NEW',
+                                    style: TextStyle(color: Colors.white)),
+                                backgroundColor: const Color(0xFF1a4a7c),
+                              ),
                             const SizedBox(height: 4),
                             Text(
                               _formatDate(data['dateTime']),
@@ -137,7 +175,7 @@ class _NotificationPageState extends State<NotificationPage> {
     if (dateTime == null) return 'N/A';
     try {
       final dt = DateTime.parse(dateTime);
-      return '${dt.day}/${dt.month}/${dt.year}';
+      return '${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return 'Invalid date';
     }
